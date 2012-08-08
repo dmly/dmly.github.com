@@ -8,7 +8,7 @@ categories: testing
 
 This is a test
 
-== This should be a heading
+## This should be a heading
 This is *bold*.
 
-=== Second heading here
+### Second heading here
