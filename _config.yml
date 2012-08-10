@@ -2,10 +2,10 @@
 #      Main Configs       #
 # ----------------------- #
 
-url: http://yoursite.com
-title: My Octopress Blog
-subtitle: A blogging framework for hackers.
-author: Your Name
+url: http://dmly.github.com
+title: Ghost in the JVM
+subtitle: An adventure in the JVM land
+author: Doug Ly
 simple_search: http://google.com/search
 description:
 
@@ -89,7 +89,7 @@ delicious_user:
 delicious_count: 3
 
 # Disqus Comments
-disqus_short_name:
+disqus_short_name: jvmisking
 disqus_show_comment_count: false
 
 # Google Analytics
