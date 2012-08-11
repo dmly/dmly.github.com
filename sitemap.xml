@@ -1,6 +1,10 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>
     <url>
+        <loc>http://dmly.github.com/blog/2008/07/28/cairngorm-and-flash-event/</loc>
+        <lastmod>2012-08-10T22:18:56-07:00</lastmod>
+    </url>
+    <url>
         <loc>http://dmly.github.com/blog/2008/10/23/autonomous-game-agent/</loc>
         <lastmod>2012-08-10T20:24:28-07:00</lastmod>
     </url>
@@ -22,10 +26,10 @@
     </url>
     <url>
         <loc>http://dmly.github.com/blog/archives/</loc>
-        <lastmod>2012-08-10T20:38:00-07:00</lastmod>
+        <lastmod>2012-08-10T22:18:56-07:00</lastmod>
     </url>
     <url>
         <loc>http://dmly.github.com/</loc>
-        <lastmod>2012-08-10T20:38:00-07:00</lastmod>
+        <lastmod>2012-08-10T22:18:56-07:00</lastmod>
     </url>
 </urlset>

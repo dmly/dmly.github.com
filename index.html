@@ -241,6 +241,51 @@ So I rolled up my sleeves and wrote my own code in Java. And I think this is the
 
     </article>
   
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2008/07/28/cairngorm-and-flash-event/">Cairngorm and Flash Event</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-07-28T18:46:00-07:00" pubdate data-updated="true">Jul 28<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>For my Flex project at work, I use Cairgorm as the MVC framework. Not that I like Cairgorn a lot but at the time our project starts it seems to be the de-facto framework for mid-to-big-mess Flex applications. Adobe also stands behind Cairgorm in supporting and consulting it.</p>
+
+<p>The learning curve is not so steep. I pick up the tutorial material available at Adobe website, specially the animated diagram is very helpful and learn to use the framework in less than a day. The second day I already begin to integrate it into our application.</p>
+
+<p>One thing annoys me most about this framework is that there is no way (sort of) for the UI to get notified when a remote call is done getting data and the result is available. I end up use some hack to get around it. For example, use a ChangeWatcher to monitor the model. When the result ready, the command object updates the model, just triggers the ChangeWatcher&#8217;s propertyChange event.</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2008/07/28/cairngorm-and-flash-event/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
   <div class="pagination">
     
     <a href="/blog/archives">Blog Archives</a>
@@ -267,6 +312,10 @@ So I rolled up my sleeves and wrote my own code in Java. And I think this is the
     
       <li class="post">
         <a href="/blog/2008/10/23/autonomous-game-agent/">Autonomous Game Agent</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2008/07/28/cairngorm-and-flash-event/">Cairngorm and Flash Event</a>
       </li>
     
   </ul>

@@ -4,7 +4,7 @@
   <title><![CDATA[Ghost in the JVM]]></title>
   <link href="http://dmly.github.com/atom.xml" rel="self"/>
   <link href="http://dmly.github.com/"/>
-  <updated>2012-08-10T20:39:03-07:00</updated>
+  <updated>2012-08-10T22:19:07-07:00</updated>
   <id>http://dmly.github.com/</id>
   <author>
     <name><![CDATA[Doug Ly]]></name>
@@ -328,6 +328,111 @@ Get the latest Java Plug-in here.
 
 
 
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Cairngorm and Flash Event]]></title>
+    <link href="http://dmly.github.com/blog/2008/07/28/cairngorm-and-flash-event/"/>
+    <updated>2008-07-28T18:46:00-07:00</updated>
+    <id>http://dmly.github.com/blog/2008/07/28/cairngorm-and-flash-event</id>
+    <content type="html"><![CDATA[<p>For my Flex project at work, I use Cairgorm as the MVC framework. Not that I like Cairgorn a lot but at the time our project starts it seems to be the de-facto framework for mid-to-big-mess Flex applications. Adobe also stands behind Cairgorm in supporting and consulting it.</p>
+
+<p>The learning curve is not so steep. I pick up the tutorial material available at Adobe website, specially the animated diagram is very helpful and learn to use the framework in less than a day. The second day I already begin to integrate it into our application.</p>
+
+<p>One thing annoys me most about this framework is that there is no way (sort of) for the UI to get notified when a remote call is done getting data and the result is available. I end up use some hack to get around it. For example, use a ChangeWatcher to monitor the model. When the result ready, the command object updates the model, just triggers the ChangeWatcher&#8217;s propertyChange event.</p>
+
+<!-- more -->
+
+
+<p>This is kind of messy and the more I use ChangeWatcher, the more I tend to stay away from it if I could. Until I find a solution&#8230;</p>
+
+<p>Remember the event class you must extend from the CairngormEvent (not Flash event)?</p>
+
+<p>You just need to include a function object (yes, a functor) from the UI component you want Cairgorm to notify when the result is ready to the cairgorm event object before dispatching it. The in your command class, when the result come back, just invoke that function object.</p>
+
+<p> Sound complicated? Not so, here it is in code</p>
+
+<p>In your event class:</p>
+
+<figure class='code'><figcaption><span>Event Class</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='actionscript'><span class='line'><span class="kd">class</span> <span class="nx">SampleEvent</span> <span class="kd">extends</span> <span class="nx">CairngormEvent</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="k">var</span> <span class="nx">someStuff</span><span class="o">:</span><span class="nb">Object</span><span class="o">;</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="k">var</span> <span class="nx">callbackFunctionObj</span><span class="o">:</span><span class="nb">Function</span><span class="o">;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>In your Command class</p>
+
+<figure class='code'><figcaption><span>Command Class</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class='actionscript'><span class='line'><span class="kd">class</span> <span class="nx">SampleCommand</span> <span class="kd">implements</span> <span class="nx">Command</span><span class="o">,</span> <span class="nb">Responder</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="kd">private</span> <span class="k">var</span> <span class="nx">callbackFunction</span><span class="o">:</span><span class="nb">Function</span><span class="o">;</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="nx">void</span> <span class="nx">execute</span><span class="p">(</span><span class="nx">event</span><span class="o">:</span><span class="nx">CairgormEvent</span><span class="p">)</span><span class="o">:</span><span class="nx">void</span>
+</span><span class='line'>  <span class="p">{</span>
+</span><span class='line'>      <span class="nx">callbackFunction</span> <span class="o">=</span> <span class="nx">event</span><span class="p">.</span><span class="nx">callbackFunction</span><span class="o">;</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="kd">public</span> <span class="nx">void</span> <span class="nx">result</span><span class="p">(</span><span class="nx">event</span><span class="o">:</span><span class="nb">Event</span><span class="p">)</span><span class="o">:</span><span class="nx">void</span>
+</span><span class='line'>  <span class="p">{</span>
+</span><span class='line'>     <span class="c1">// setting your model with the result</span>
+</span><span class='line'>      <span class="p">....</span>
+</span><span class='line'>     <span class="nx">callbackFunction</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="kc">null</span><span class="p">);</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span>In The UI</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='actionscript'><span class='line'><span class="o">&lt;</span><span class="nx">script</span><span class="o">&gt;</span>
+</span><span class='line'>    <span class="k">var</span> <span class="nx">event</span><span class="o">:</span><span class="nx">SampleEvent</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">SampleEvent</span><span class="o">;</span>
+</span><span class='line'>    <span class="nx">event</span><span class="p">.</span><span class="nx">someStuff</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Stuff</span><span class="p">()</span>
+</span><span class='line'>    <span class="nx">event</span><span class="p">.</span><span class="nx">callbackFunctionObj</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">notfyMeWhenDataReady</span><span class="o">;</span>
+</span><span class='line'>   <span class="nx">event</span><span class="p">.</span><span class="nx">dispatch</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="nx">void</span> <span class="nx">notfyMeWhenDataReady</span><span class="p">()</span><span class="o">:</span><span class="nx">void</span>
+</span><span class='line'>    <span class="p">{</span>
+</span><span class='line'>       <span class="c1">// do whatever you want when the data is ready here</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="nx">script</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>When the result is ready, the command object will invoke the callback function. Thus in the above example notfyMeWhenDataReady will be called!</p>
 ]]></content>
   </entry>
   
