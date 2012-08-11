@@ -1,0 +1,276 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Autonomous Game Agent - Ghost in the JVM</title>
+  <meta name="author" content="Doug Ly">
+
+  
+  <meta name="description" content="I am always interested in game AI programming, specially autonomous game agents which move around and act on their own will but based on a set of pre &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://dmly.github.com/blog/2008/10/23/autonomous-game-agent/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="Ghost in the JVM" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Ghost in the JVM</a></h1>
+  
+    <h2>An adventure in the JVM land</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:dmly.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Autonomous Game Agent</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-10-23T18:57:00-07:00" pubdate data-updated="true">Oct 23<span>rd</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>I am always interested in game AI programming, specially autonomous game agents which move around and act on their own will but based on a set of pre-defined rules of course.
+After reading the first chapter of <a href="http://www.amazon.com/Programming-Game-Example-Mat-Buckland/dp/1556220782/ref=sr_1_5?ie=UTF8&amp;s=books&amp;qid=1224810375&amp;sr=8-5">Programming Game AI by Example</a> by Matt Buckland, I can understand the magic behind those intelligent behaviors. I am very impressed to know how simple it is  to create those behaviors. But it&#8217;s definitely not simple if one is not familiar with trigonometry and geometric algebra.</p>
+
+<p>The code presented in this book is all C++. And I have a hard time to make those code built in Visual C++ 2008. It is guaranteed to work with Visual C++ 2005 only!
+So I rolled up my sleeves and wrote my own code in Java. And I think this is the best way to test how much I understand the book.</p>
+
+<!-- more -->
+
+
+<p>So far, I have finished coding the following behaviors: arrive, seek, avoid, wandering and obstacle avoidance.</p>
+
+<p>I put those behaviors in a single applet illustrated here. It&#8217;s just a bunch of flies flying around trying to avoid their predator, a spider may be!</p>
+
+<object classid="clsid:8AD9C840-044E-11D1-B3E9-00805F499D93" codebase="http://java.sun.com/update/1.4.2/jinstall-1_4_2_12-windows-i586.cab" width="500" height="500" standby="Loading Processing software..."  >    
+<param name="code" value="com.lyfam.game.agent.WanderingAvoidance" />
+<param name="archive" value="http://autonomous-game-agent.googlecode.com/svn/trunk/SteeringBehavior/wandering.jar" />
+
+<param name="mayscript" value="true" />
+<param name="scriptable" value="true" />
+    
+<param name="image" value="loading.gif" />
+
+<param name="boxmessage" value="Loading Processing software..." />
+<param name="boxbgcolor" value="#000000" />
+                    
+<param name="test_string" value="inner" />
+                
+<p>
+<strong>
+This browser does not have a Java Plug-in.
+<br />
+<a href="http://java.sun.com/products/plugin/downloads/index.html" title="Download Java Plug-in">
+Get the latest Java Plug-in here.
+</a>
+
+</strong>
+</p>
+
+</object>
+
+
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Doug Ly</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-10-23T18:57:00-07:00" pubdate data-updated="true">Oct 23<span>rd</span>, 2008</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/programming/'>programming</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://dmly.github.com/blog/2008/10/23/autonomous-game-agent/" data-via="" data-counturl="http://dmly.github.com/blog/2008/10/23/autonomous-game-agent/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+      
+        <a class="basic-alignment right" href="/blog/2009/01/14/state-of-wsrp-development-openportal-verus-apache-wsrp4j/" title="Next Post: State of WSRP Development: OpenPortal verus Apache wsrp4j">State of WSRP Development: OpenPortal verus Apache wsrp4j &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2012/08/08/hello-world/">Hello World</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2009/03/13/dbunit-flatxmldataset-export-using-groovy-builder/">DBUnit FlatXmlDataSet Export Using Groovy Builder</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2009/01/14/state-of-wsrp-development-openportal-verus-apache-wsrp4j/">State of WSRP Development: OpenPortal verus Apache wsrp4j</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2008/10/23/autonomous-game-agent/">Autonomous Game Agent</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2012 - Doug Ly -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'jvmisking';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://dmly.github.com/blog/2008/10/23/autonomous-game-agent/';
+        var disqus_url = 'http://dmly.github.com/blog/2008/10/23/autonomous-game-agent/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,339 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>State of WSRP Development: OpenPortal verus Apache wsrp4j - Ghost in the JVM</title>
+  <meta name="author" content="Doug Ly">
+
+  
+  <meta name="description" content="with wsrp4j project has become more and more dormant, I am seeking for another wsrp framework.
+To the best of my knowledge, beside the commercial &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://dmly.github.com/blog/2009/01/14/state-of-wsrp-development-openportal-verus-apache-wsrp4j/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="Ghost in the JVM" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Ghost in the JVM</a></h1>
+  
+    <h2>An adventure in the JVM land</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:dmly.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">State of WSRP Development: OpenPortal Verus Apache Wsrp4j</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-01-14T20:27:00-08:00" pubdate data-updated="true">Jan 14<span>th</span>, 2009</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>with wsrp4j project has become more and more dormant, I am seeking for another wsrp framework.
+To the best of my knowledge, beside the commercial framework out there from BEA Portal and IBM Websphere, Apache&#8217;s wsrp4j used to be the
+only open source solution until Sun steps in and sponsors java.net&#8217;s OpenPortal.
+ My intention is to only replace the wsrp producer, but it is not a trivial task to just simply swap one producer and use it with the existing portlet container implementation.
+So go with OpenPortal container and its wsrp I am right now.</p>
+
+<!-- more -->
+
+
+<p>So far, my feeling with OpenPortal implementation is nothing but impressed. I&#8217;m impressed from
+how easy it is to setup the container/producer in Tomcat, the ease of portlet deployment to the active support of OpenPortal&#8217;s community.
+Of course, I encounter a few glitches here and there but they all could be overcome within a matter of hours by looking at the code or requesting support of the community.</p>
+
+<p>What about performance, how does OpenPortal perform compare to Apache portal suite.
+I gear up and setup the two framework to go head to head for a benchmark test.</p>
+
+<p>What I use:</p>
+
+<table width="100%" cellspacing="1" cellpadding="1" border="1" align="center">
+    <tbody>
+        <tr>
+            <td align="center"><strong>OpenPortal</strong></td>
+            <td align="center"><strong>Apache Portal</strong></td>
+        </tr>
+        <tr>
+            <td>OpenPortal portlet container milestone 4 (July 2008) <br />
+            OpenPortal wsrp implementation milestone 4 (July 2008)</td>
+            <td>Apache Portlet Container Pluto 1.0.1 Release (some time 2006??) <br />
+            Apache wsrp4j Revision 327501 on August 28 2005 (they have not a stable release yet)</td>
+        </tr>
+        <tr>
+            <td>Web Services stack: JAX-WS Sun&#8217;s implementation</td>
+            <td>Web Services stack: Apache Axis 1.3</td>
+        </tr>
+    </tbody>
+</table>
+
+
+<p>All run from JDK 1.6 and tomcat 6 servlet.</p>
+
+<p>How do I conduct the test:
+-  In the consumer side I setup a servlet filter to capture the time to complete a request: this can be used to benchmark the web services stacks.
+-  in the producer side I also setup a filter to capture the time the producer take to process the request: this can be used to benchmark the portlet containers.
+I&#8217;m making one assumption here: producers&#8217; performance difference from both implementations can be ignored since it delegates most of its work to the portlet
+container.</p>
+
+<ul>
+<li>I create a simple portlet JSP generating a huge content: table with 500 rows full of text, roughly 3 MB in its final rendered HTML.</li>
+<li>Make 10 requests and take the average: discard the result of the very first request due to overhead of initialization of the wsrp engine from both framework
+I notice that OpenPortal takes less time to initialize. When both engines are ready, their performance are pretty identical:</li>
+</ul>
+
+
+<table width="100%" cellspacing="1" cellpadding="1" border="1">
+    <tbody>
+        <tr>
+            <td align="center"><strong>Benchmark Item</strong></td>
+            <td align="center"><strong>OpenPortal Consumer</strong></td>
+            <td align="center"><strong>Apache wsrp4j Consumer</strong></td>
+            <td align="center"><strong>OpenPortal Producer </strong></td>
+            <td align="center"><strong>Apache wsrp4j Producer</strong></td>
+        </tr>
+        <tr>
+            <td># of Requests</td>
+            <td>10</td>
+            <td>10</td>
+            <td>10</td>
+            <td>10</td>
+        </tr>
+        <tr>
+            <td>Min Time (ms)</td>
+            <td>1406</td>
+            <td>1641</td>
+            <td>438</td>
+            <td>468</td>
+        </tr>
+        <tr>
+            <td>Avg Time (ms)</td>
+            <td>1807.8</td>
+            <td>1736.3</td>
+            <td>611.2</td>
+            <td>666.9</td>
+        </tr>
+        <tr>
+            <td>Max Time (ms)</td>
+            <td>1985</td>
+            <td>2032</td>
+            <td>1047</td>
+            <td>859</td>
+        </tr>
+    </tbody>
+</table>
+
+
+<p><em>Conclusion</em>
+If we continue to choose open source solution for our portal, OpenPortal would be the best choice at this moment.
+wsrp4j has not had any activity recently (3 years). Its community support is weak. The code is unstable: latest unstable release (0.5) won&#8217;t even compatible with any Pluto container.
+While Apache pluto/jetspeed container already supports portlet spec 2.0 wsrp4j is still clinging at spec 1.0</p>
+
+<p>from the last couple of weeks working with OpenPortal I feel the support is pretty strong. Whenever I report a bug, a response always follows the next day. Sometimes
+it comes with patches as well. OpenPortal will not work out of the box at this moment with our existing consumer but it would not take much time or effort to fix it.
+best of all, OpenPortal comes with the support of portlet 2.0 spec and wsrp version 2 spec!</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Doug Ly</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-01-14T20:27:00-08:00" pubdate data-updated="true">Jan 14<span>th</span>, 2009</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/programming/'>programming</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://dmly.github.com/blog/2009/01/14/state-of-wsrp-development-openportal-verus-apache-wsrp4j/" data-via="" data-counturl="http://dmly.github.com/blog/2009/01/14/state-of-wsrp-development-openportal-verus-apache-wsrp4j/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2008/10/23/autonomous-game-agent/" title="Previous Post: Autonomous Game Agent">&laquo; Autonomous Game Agent</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2009/03/13/dbunit-flatxmldataset-export-using-groovy-builder/" title="Next Post: DBUnit FlatXmlDataSet Export Using Groovy Builder">DBUnit FlatXmlDataSet Export Using Groovy Builder &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2012/08/08/hello-world/">Hello World</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2009/03/13/dbunit-flatxmldataset-export-using-groovy-builder/">DBUnit FlatXmlDataSet Export Using Groovy Builder</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2009/01/14/state-of-wsrp-development-openportal-verus-apache-wsrp4j/">State of WSRP Development: OpenPortal verus Apache wsrp4j</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2008/10/23/autonomous-game-agent/">Autonomous Game Agent</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2012 - Doug Ly -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'jvmisking';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://dmly.github.com/blog/2009/01/14/state-of-wsrp-development-openportal-verus-apache-wsrp4j/';
+        var disqus_url = 'http://dmly.github.com/blog/2009/01/14/state-of-wsrp-development-openportal-verus-apache-wsrp4j/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

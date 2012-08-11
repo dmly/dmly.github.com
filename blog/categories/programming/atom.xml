@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: programming | Ghost in the JVM]]></title>
+  <link href="http://dmly.github.com/blog/categories/programming/atom.xml" rel="self"/>
+  <link href="http://dmly.github.com/"/>
+  <updated>2012-08-10T20:39:03-07:00</updated>
+  <id>http://dmly.github.com/</id>
+  <author>
+    <name><![CDATA[Doug Ly]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[DBUnit FlatXmlDataSet Export Using Groovy Builder]]></title>
+    <link href="http://dmly.github.com/blog/2009/03/13/dbunit-flatxmldataset-export-using-groovy-builder/"/>
+    <updated>2009-03-13T20:35:00-07:00</updated>
+    <id>http://dmly.github.com/blog/2009/03/13/dbunit-flatxmldataset-export-using-groovy-builder</id>
+    <content type="html"><![CDATA[<p>Recently I have been using [DBUnit][1] to run my DAOs unit test with Spring and HSQL in memory database. One of the biggest challenge in testing the DAO layer is generating data to test with.
+Of course you could export data in your development database in style of insert statement files and import them into the test database before executing the test. But I think doing so still requires a lot of manual work
+for a busy developer. One nice thing about DbUnit is that you can export your test data into a single XML file and while setting up the unit test, you tell DbUnit to execute the import based on the XML data file.</p>
+
+<!-- more -->
+
+
+<p>Just for reference, a FlatXmlDataSet looks like this
+``` xml FlatXmlDataSet
+<dataset></p>
+
+<pre><code>&lt;table1 id='1' name='hello'/&gt;
+&lt;table1 id='2' name='world'/&gt;
+
+ &lt;table2 id='1' name='hello3232'/&gt;
+&lt;table2 id='3' name='hello323'/&gt;
+</code></pre>
+
+<p></dataset>
+```</p>
+
+<p>DbUnit will create 2 rows for table1 and 2 rows for table2 in your schema. For more info please see this
+Now Groovy Builder, especially the MarkupBuilder is perfect for this kind of task: extract data from a query and build the XML file based on the extracted data.
+The code looks like this:</p>
+
+<p>``` groovy
+import groovy.sql.Sql
+import groovy.xml.MarkupBuilder</p>
+
+<p>sqlDriver = Sql.newInstance("jdbc:oracle:thin:@oracle_home:12345:sid",</p>
+
+<pre><code>                        "username", 
+                        "password", 
+                        "oracle.jdbc.driver.OracleDriver")
+</code></pre>
+
+<p>queries['USER'] =
+"""
+select
+*
+from
+USER
+where
+user_id = '12345'
+"""</p>
+
+<p>queries['COVERAGE'] =
+"""
+select
+*
+from
+COVERAGE coo
+where
+coo.user_id = '12345'
+"""</p>
+
+<p>buffer = new StringWriter()
+builder = new MarkupBuilder(buffer)</p>
+
+<p>builder.dataset()
+{</p>
+
+<pre><code>queries.each
+{
+    table,stmt -&gt;
+        sqlDriver.eachRow(stmt)
+                {row -&gt;
+                    map = [:]
+                    (0..&lt;row.getMetaData().columnCount).collect {
+                         col -&gt; map[row.getMetaData().getColumnName(col+1)] = row[col]
+                    }
+                    "${table}" (map)
+                }
+}
+</code></pre>
+
+<p>}</p>
+
+<p>def fos = new File('dbunit_test.xml').withWriter
+{</p>
+
+<pre><code>it.write(buffer.toString())
+</code></pre>
+
+<p>}
+```
+For each query the map 'queries' define, MarkupBuilder will generate the FlatXmlDataSet format entries for the returned tuples.
+There we go your test data file!</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[State of WSRP Development: OpenPortal verus Apache wsrp4j]]></title>
+    <link href="http://dmly.github.com/blog/2009/01/14/state-of-wsrp-development-openportal-verus-apache-wsrp4j/"/>
+    <updated>2009-01-14T20:27:00-08:00</updated>
+    <id>http://dmly.github.com/blog/2009/01/14/state-of-wsrp-development-openportal-verus-apache-wsrp4j</id>
+    <content type="html"><![CDATA[<p>with wsrp4j project has become more and more dormant, I am seeking for another wsrp framework.
+To the best of my knowledge, beside the commercial framework out there from BEA Portal and IBM Websphere, Apache's wsrp4j used to be the
+only open source solution until Sun steps in and sponsors java.net's OpenPortal.
+ My intention is to only replace the wsrp producer, but it is not a trivial task to just simply swap one producer and use it with the existing portlet container implementation.
+So go with OpenPortal container and its wsrp I am right now.</p>
+
+<!-- more -->
+
+
+<p>So far, my feeling with OpenPortal implementation is nothing but impressed. I'm impressed from
+how easy it is to setup the container/producer in Tomcat, the ease of portlet deployment to the active support of OpenPortal's community.
+Of course, I encounter a few glitches here and there but they all could be overcome within a matter of hours by looking at the code or requesting support of the community.</p>
+
+<p>What about performance, how does OpenPortal perform compare to Apache portal suite.
+I gear up and setup the two framework to go head to head for a benchmark test.</p>
+
+<p>What I use:</p>
+
+<table width="100%" cellspacing="1" cellpadding="1" border="1" align="center">
+    <tbody>
+        <tr>
+            <td align="center"><strong>OpenPortal</strong></td>
+            <td align="center"><strong>Apache Portal</strong></td>
+        </tr>
+        <tr>
+            <td>OpenPortal portlet container milestone 4 (July 2008) <br />
+            OpenPortal wsrp implementation milestone 4 (July 2008)</td>
+            <td>Apache Portlet Container Pluto 1.0.1 Release (some time 2006??) <br />
+            Apache wsrp4j Revision 327501 on August 28 2005 (they have not a stable release yet)</td>
+        </tr>
+        <tr>
+            <td>Web Services stack: JAX-WS Sun's implementation</td>
+            <td>Web Services stack: Apache Axis 1.3</td>
+        </tr>
+    </tbody>
+</table>
+
+
+<p>All run from JDK 1.6 and tomcat 6 servlet.</p>
+
+<p>How do I conduct the test:
+-  In the consumer side I setup a servlet filter to capture the time to complete a request: this can be used to benchmark the web services stacks.
+-  in the producer side I also setup a filter to capture the time the producer take to process the request: this can be used to benchmark the portlet containers.
+I'm making one assumption here: producers' performance difference from both implementations can be ignored since it delegates most of its work to the portlet
+container.</p>
+
+<ul>
+<li>I create a simple portlet JSP generating a huge content: table with 500 rows full of text, roughly 3 MB in its final rendered HTML.</li>
+<li>Make 10 requests and take the average: discard the result of the very first request due to overhead of initialization of the wsrp engine from both framework
+I notice that OpenPortal takes less time to initialize. When both engines are ready, their performance are pretty identical:</li>
+</ul>
+
+
+<table width="100%" cellspacing="1" cellpadding="1" border="1">
+    <tbody>
+        <tr>
+            <td align="center"><strong>Benchmark Item</strong></td>
+            <td align="center"><strong>OpenPortal Consumer</strong></td>
+            <td align="center"><strong>Apache wsrp4j Consumer</strong></td>
+            <td align="center"><strong>OpenPortal Producer </strong></td>
+            <td align="center"><strong>Apache wsrp4j Producer</strong></td>
+        </tr>
+        <tr>
+            <td># of Requests</td>
+            <td>10</td>
+            <td>10</td>
+            <td>10</td>
+            <td>10</td>
+        </tr>
+        <tr>
+            <td>Min Time (ms)</td>
+            <td>1406</td>
+            <td>1641</td>
+            <td>438</td>
+            <td>468</td>
+        </tr>
+        <tr>
+            <td>Avg Time (ms)</td>
+            <td>1807.8</td>
+            <td>1736.3</td>
+            <td>611.2</td>
+            <td>666.9</td>
+        </tr>
+        <tr>
+            <td>Max Time (ms)</td>
+            <td>1985</td>
+            <td>2032</td>
+            <td>1047</td>
+            <td>859</td>
+        </tr>
+    </tbody>
+</table>
+
+
+<p><em>Conclusion</em>
+If we continue to choose open source solution for our portal, OpenPortal would be the best choice at this moment.
+wsrp4j has not had any activity recently (3 years). Its community support is weak. The code is unstable: latest unstable release (0.5) won't even compatible with any Pluto container.
+While Apache pluto/jetspeed container already supports portlet spec 2.0 wsrp4j is still clinging at spec 1.0</p>
+
+<p>from the last couple of weeks working with OpenPortal I feel the support is pretty strong. Whenever I report a bug, a response always follows the next day. Sometimes
+it comes with patches as well. OpenPortal will not work out of the box at this moment with our existing consumer but it would not take much time or effort to fix it.
+best of all, OpenPortal comes with the support of portlet 2.0 spec and wsrp version 2 spec!</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Autonomous Game Agent]]></title>
+    <link href="http://dmly.github.com/blog/2008/10/23/autonomous-game-agent/"/>
+    <updated>2008-10-23T18:57:00-07:00</updated>
+    <id>http://dmly.github.com/blog/2008/10/23/autonomous-game-agent</id>
+    <content type="html"><![CDATA[<p>I am always interested in game AI programming, specially autonomous game agents which move around and act on their own will but based on a set of pre-defined rules of course.
+After reading the first chapter of <a href="http://www.amazon.com/Programming-Game-Example-Mat-Buckland/dp/1556220782/ref=sr_1_5?ie=UTF8&amp;s=books&amp;qid=1224810375&amp;sr=8-5">Programming Game AI by Example</a> by Matt Buckland, I can understand the magic behind those intelligent behaviors. I am very impressed to know how simple it is  to create those behaviors. But it's definitely not simple if one is not familiar with trigonometry and geometric algebra.</p>
+
+<p>The code presented in this book is all C++. And I have a hard time to make those code built in Visual C++ 2008. It is guaranteed to work with Visual C++ 2005 only!
+So I rolled up my sleeves and wrote my own code in Java. And I think this is the best way to test how much I understand the book.</p>
+
+<!-- more -->
+
+
+<p>So far, I have finished coding the following behaviors: arrive, seek, avoid, wandering and obstacle avoidance.</p>
+
+<p>I put those behaviors in a single applet illustrated here. It's just a bunch of flies flying around trying to avoid their predator, a spider may be!</p>
+
+<object classid="clsid:8AD9C840-044E-11D1-B3E9-00805F499D93" codebase="http://java.sun.com/update/1.4.2/jinstall-1_4_2_12-windows-i586.cab" width="500" height="500" standby="Loading Processing software..."  >    
+<param name="code" value="com.lyfam.game.agent.WanderingAvoidance" />
+<param name="archive" value="http://autonomous-game-agent.googlecode.com/svn/trunk/SteeringBehavior/wandering.jar" />
+
+<param name="mayscript" value="true" />
+<param name="scriptable" value="true" />
+    
+<param name="image" value="loading.gif" />
+
+<param name="boxmessage" value="Loading Processing software..." />
+<param name="boxbgcolor" value="#000000" />
+                    
+<param name="test_string" value="inner" />
+                
+<p>
+<strong>
+This browser does not have a Java Plug-in.
+<br />
+<a href="http://java.sun.com/products/plugin/downloads/index.html" title="Download Java Plug-in">
+Get the latest Java Plug-in here.
+</a>
+
+</strong>
+</p>
+
+</object>
+
+
+
+]]></content>
+  </entry>
+  
+</feed>
