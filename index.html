@@ -9,8 +9,7 @@
   <meta name="author" content="Doug Ly">
 
   
-  <meta name="description" content="This is a test This should be a heading This is bold. Second heading here
-">
+  <meta name="description" content="I have this client table in Oracle having more than 3 million rows. One of the column is the client name in which our users want to have full text &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -71,7 +70,7 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2012/08/08/hello-world/">Hello World</a></h1>
+      <h1 class="entry-title"><a href="/blog/2010/09/14/building-database-full-text-index-with-lucene/">Building Database Full Text Index With Lucene</a></h1>
     
     
       <p class="meta">
@@ -87,22 +86,193 @@
   
 
 
-<time datetime="2012-08-08T14:56:00-07:00" pubdate data-updated="true">Aug 8<span>th</span>, 2012</time>
+<time datetime="2010-09-14T14:15:00-07:00" pubdate data-updated="true">Sep 14<span>th</span>, 2010</time>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><p>This is a test</p>
+  <div class="entry-content"><p>I have this client table in Oracle having more than 3 million rows. One of the column is the client name in which our users want to have full text search support.
+Originally, Oracle context search feature was choosen by a group of consultants. May be we were maintaining the domain index correctly but its performance sucks.</p>
 
-<h2>This should be a heading</h2>
-
-<p>This is <em>bold</em>.</p>
-
-<h3>Second heading here</h3>
 </div>
   
+  
+    <footer>
+      <a rel="full-article" href="/blog/2010/09/14/building-database-full-text-index-with-lucene/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2010/08/27/asynchronous-calls-in-c-number/">Asynchronous Calls in C#</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2010-08-27T14:19:00-07:00" pubdate data-updated="true">Aug 27<span>th</span>, 2010</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Last December I started leading a team develop a Outlook addin for the firm.
+I admit that I am no C# developer. The last time I used C# was when I attended college years ago. But the group of consultants
+were let go and we have to jump in and take ownership of the project.</p>
+
+<p>I also have to admit that C# has a lot of language features that I really wish Java does too. Among them is the concept of delegate
+and function pointer used for asynchronous method calls. I know I can get the same thing with Groovy or Scala.</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2010/08/27/asynchronous-calls-in-c-number/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2009/07/15/concurrent-amf-request-for-blazeds/">Concurrent AMF Request for BlazeDS</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-07-15T14:12:00-07:00" pubdate data-updated="true">Jul 15<span>th</span>, 2009</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Requirement: AMF data service comes with BlazeDS servlet is asynchronous. One of the services provided is RemoteObject. RemoteObject calls are faster than WebServices and HTTPServices because the information is exchanged in binary.
+But RemoteObject itself has a not-too-well-known behavior. While it is true that RemoteObject services are asynchronous, they are not parallel.</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2009/07/15/concurrent-amf-request-for-blazeds/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2009/07/02/query-templating-for-hibernate-native-query/">Query Templating for Hibernate Native Query</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-07-02T14:09:00-07:00" pubdate data-updated="true">Jul 2<span>nd</span>, 2009</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>I recently encounter this kind of problematic requirement: making a native SQL in hibernate dynamic. The query should be written as a template. And based on the user selection, a concrete SQl statement is derived.
+It&#8217;s pointless to have this conversation if we use HQL&#8217;s query criteria of course. But with native SQL code, I admit there is no easy/legitimate way around but hack.</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2009/07/02/query-templating-for-hibernate-native-query/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2009/03/15/ria-portlet-made-possible-with-flex-remoting/">RIA Portlet Made Possible With Flex Remoting</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-03-15T13:50:00-07:00" pubdate data-updated="true">Mar 15<span>th</span>, 2009</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Even though portlet development standard has been in existence for a while its popularity and advanced functionality hasn&#8217;t got a lot of changes comparing to traditional web application development. Up until now, the <em>only</em> way to develop a portlet application is to use the dated (but obviously dominant) JSP technology. I know there have have been several attempts to bring advanced view engines into JSR-168/JSP-286 such as JSF prolet bridge or even the Wicket Portlet bridge the lanscape overall is pretty naive and dificult to comprehense. I can refer to <a href="http://today.java.net/pub/a/today/2009/01/20/jsr-286-portlet-irrelevance.html">this artical</a> when it comes to the reasons why portlet has not become dominant as if it should be by now.</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2009/03/15/ria-portlet-made-possible-with-flex-remoting/">Read on &rarr;</a>
+    </footer>
   
 
 
@@ -299,23 +469,23 @@ So I rolled up my sleeves and wrote my own code in Java. And I think this is the
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2012/08/08/hello-world/">Hello World</a>
+        <a href="/blog/2010/09/14/building-database-full-text-index-with-lucene/">Building Database Full Text Index with Lucene</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2009/03/13/dbunit-flatxmldataset-export-using-groovy-builder/">DBUnit FlatXmlDataSet Export Using Groovy Builder</a>
+        <a href="/blog/2010/08/27/asynchronous-calls-in-c-number/">Asynchronous Calls in C#</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2009/01/14/state-of-wsrp-development-openportal-verus-apache-wsrp4j/">State of WSRP Development: OpenPortal verus Apache wsrp4j</a>
+        <a href="/blog/2009/07/15/concurrent-amf-request-for-blazeds/">Concurrent AMF Request for BlazeDS</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2008/10/23/autonomous-game-agent/">Autonomous Game Agent</a>
+        <a href="/blog/2009/07/02/query-templating-for-hibernate-native-query/">Query Templating for Hibernate Native Query</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2008/07/28/cairngorm-and-flash-event/">Cairngorm and Flash Event</a>
+        <a href="/blog/2009/03/15/ria-portlet-made-possible-with-flex-remoting/">RIA Portlet Made Possible With Flex Remoting</a>
       </li>
     
   </ul>

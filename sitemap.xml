@@ -21,15 +21,37 @@
         <lastmod>2012-08-10T20:38:00-07:00</lastmod>
     </url>
     <url>
-        <loc>http://dmly.github.com/blog/2012/08/08/hello-world/</loc>
-        <lastmod>2012-08-09T20:53:05-07:00</lastmod>
+        <loc>
+            http://dmly.github.com/blog/2009/03/15/ria-portlet-made-possible-with-flex-remoting/
+        </loc>
+        <lastmod>2012-08-11T14:07:55-07:00</lastmod>
+    </url>
+    <url>
+        <loc>
+            http://dmly.github.com/blog/2009/07/02/query-templating-for-hibernate-native-query/
+        </loc>
+        <lastmod>2012-08-11T14:12:06-07:00</lastmod>
+    </url>
+    <url>
+        <loc>http://dmly.github.com/blog/2009/07/15/concurrent-amf-request-for-blazeds/</loc>
+        <lastmod>2012-08-11T14:14:41-07:00</lastmod>
+    </url>
+    <url>
+        <loc>http://dmly.github.com/blog/2010/08/27/asynchronous-calls-in-c-number/</loc>
+        <lastmod>2012-08-11T14:20:27-07:00</lastmod>
+    </url>
+    <url>
+        <loc>
+            http://dmly.github.com/blog/2010/09/14/building-database-full-text-index-with-lucene/
+        </loc>
+        <lastmod>2012-08-11T14:18:55-07:00</lastmod>
     </url>
     <url>
         <loc>http://dmly.github.com/blog/archives/</loc>
-        <lastmod>2012-08-10T22:18:56-07:00</lastmod>
+        <lastmod>2012-08-11T14:20:27-07:00</lastmod>
     </url>
     <url>
         <loc>http://dmly.github.com/</loc>
-        <lastmod>2012-08-10T22:18:56-07:00</lastmod>
+        <lastmod>2012-08-11T14:20:27-07:00</lastmod>
     </url>
 </urlset>

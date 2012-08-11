@@ -1,0 +1,319 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>RIA Portlet Made Possible With Flex Remoting - Ghost in the JVM</title>
+  <meta name="author" content="Doug Ly">
+
+  
+  <meta name="description" content="Even though portlet development standard has been in existence for a while its popularity and advanced functionality hasn&#8217;t got a lot of &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://dmly.github.com/blog/2009/03/15/ria-portlet-made-possible-with-flex-remoting/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="Ghost in the JVM" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Ghost in the JVM</a></h1>
+  
+    <h2>An adventure in the JVM land</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:dmly.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">RIA Portlet Made Possible With Flex Remoting</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-03-15T13:50:00-07:00" pubdate data-updated="true">Mar 15<span>th</span>, 2009</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>Even though portlet development standard has been in existence for a while its popularity and advanced functionality hasn&#8217;t got a lot of changes comparing to traditional web application development. Up until now, the <em>only</em> way to develop a portlet application is to use the dated (but obviously dominant) JSP technology. I know there have have been several attempts to bring advanced view engines into JSR-168/JSP-286 such as JSF prolet bridge or even the Wicket Portlet bridge the lanscape overall is pretty naive and dificult to comprehense. I can refer to <a href="http://today.java.net/pub/a/today/2009/01/20/jsr-286-portlet-irrelevance.html">this artical</a> when it comes to the reasons why portlet has not become dominant as if it should be by now.</p>
+
+<!-- more -->
+
+
+<p>In this story I will demonstrate my attempt to bring RIA development to a portlet environment. The technology stack I am using includes: Sun&#8217;s OpenPortal portlet container, Flex RIA with blazeDS remoting. One of the most challenging obstacles developers face in developing RIA in a portlet environment is the asynchronous communication channel between the UI and the portlet itself. Portlet development somewhat is very similar to that of servlet development most of the time. But when it comes to technologies that tightly integrated into servlet, things start to break: try to put DWR/Wicket/Tapestry&#8230; in a portlet environment you would feel the pain!</p>
+
+<p>My attempt to put the BlazeDS remoting into a portlet environment was a success. But it doesn&#8217;t mean I didn&#8217;t run into any bumps along the way.
+Here how I did it: I have a regular portlet applicaption which provides nothing but a single JSP view. Then I create a Flex component which will be embedded in the JSP view. The Flex component has a single combo box widget which will make a remote RPC call via BlazeDS remoting to get the list data for itself. Now in the portlet application (which is nothing more than regular web app), I add blazeDS and all of the remote services support. To describe the setup is beyond the scope of this article but you can find many tutorials/articles online regarding the config. So far this is what we have:</p>
+
+<ul>
+<li> A portlet app with blazeDS remoting support</li>
+<li> A Flex component which will get data from remoting services</li>
+<li> A JSP view to embed the Flex component</li>
+</ul>
+
+
+<p>Now comes the critical section: making Flex component calling the remoting services from a portlet app.
+Normally when you build a flex application with remoting services, you provide a fixed services-config.xml containing the channel/endpoint configuration.
+This won&#8217;t work in a portlet environment since you don&#8217;t know the hostname, port numbers, context root, etc&#8230; before hand. All of those configurations depend on the portlet container implementation. To solve this issue I configure the Flex remoting services at runtime. In the JSP view embedding the Flex component I add a flashvars parameter to hold the BlazeDS remoting URL context. I advice that you use the standard portlet API to generate this URL instead of hardcoding it. For example in the JSP view, I get the remote service URL using this:</p>
+
+<figure class='code'><figcaption><span>JSP</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;p&gt;&lt;span</span> <span class="na">style=</span><span class="s">&quot;font-family: Courier New;&quot;</span><span class="nt">&gt;&lt;object</span> <span class="err">...</span><span class="nt">&gt;&lt;/span&gt;&lt;span</span> <span class="na">style=</span><span class="s">&quot;font-family: Courier New;&quot;</span><span class="nt">&gt;&lt;br&gt;</span>
+</span><span class='line'>...<span class="nt">&lt;br&gt;</span>
+</span><span class='line'><span class="nt">&lt;span</span> <span class="na">style=</span><span class="s">&quot;color: rgb(255, 0, 0);&quot;</span><span class="nt">&gt;&lt;param</span> <span class="na">name=</span><span class="s">&quot;flashvars&quot;</span> <span class="na">value=</span><span class="s">&#39;serviceUrl=&lt;%= renderResponse.encodeURL(renderRequest.getContextPath()&lt;br&gt;</span>
+</span><span class='line'><span class="s">    + &quot;/messagebroker/amf&quot;) %&gt;&#39;</span> <span class="nt">/&gt;&lt;/span&gt;&lt;br&gt;</span>
+</span><span class='line'><span class="nt">&lt;embed</span> <span class="na">src=</span><span class="s">&#39;&lt;%= renderResponse.encodeURL(renderRequest.getContextPath()&lt;br&gt;</span>
+</span><span class='line'><span class="s">      + &quot;/portlet.swf&quot;) %&gt;&#39;</span><span class="err">&lt;</span><span class="na">br</span><span class="nt">&gt;</span>
+</span><span class='line'>    ...<span class="nt">&lt;br&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;span</span> <span class="na">style=</span><span class="s">&quot;color: rgb(255, 0, 0);&quot;</span><span class="nt">&gt;</span>flashVars=&#39;serviceUrl=<span class="err">&lt;</span>%= renderResponse.encodeURL(renderRequest.getContextPath()<span class="nt">&lt;br&gt;</span>
+</span><span class='line'>      + &quot;/messagebroker/amf&quot;) %&gt;&#39;<span class="nt">&lt;/span&gt;&lt;br&gt;</span>
+</span><span class='line'>            &gt;<span class="nt">&lt;br&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;/embed&gt;&lt;br&gt;</span>
+</span><span class='line'><span class="nt">&lt;/object&gt;&lt;/span&gt;&lt;/p&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now in the flex component, you need to create the remote channel/endpoint programmatically:</p>
+
+<figure class='code'><figcaption><span>Channel</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='actionscript'><span class='line'><span class="k">var</span> <span class="nx">serviceUrl</span><span class="o">:</span><span class="nb">String</span> <span class="o">=</span> <span class="nx">Application</span><span class="p">.</span><span class="nx">application</span><span class="p">.</span><span class="nx">parameters</span><span class="p">.</span><span class="nx">serviceUrl</span><span class="o">;</span>
+</span><span class='line'><span class="k">var</span> <span class="nx">_channelSet</span><span class="o">:</span><span class="nx">ChannelSet</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ChannelSet</span><span class="p">();</span>
+</span><span class='line'><span class="k">var</span> <span class="nx">_amfChannel</span><span class="o">:</span><span class="nx">AMFChannel</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">AMFChannel</span><span class="p">(</span><span class="s2">&quot;my-amf&quot;</span><span class="o">,</span> <span class="nx">serviceUrl</span><span class="p">);</span>
+</span><span class='line'><span class="nx">_channelSet</span><span class="p">.</span><span class="nx">addChannel</span><span class="p">(</span><span class="nx">_amfChannel</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">remoteObj</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">RemoteObject</span><span class="p">(</span><span class="s2">&quot;remoteService&quot;</span><span class="p">);</span>
+</span><span class='line'><span class="nx">remoteObj</span><span class="p">.</span><span class="nx">channelSet</span> <span class="o">=</span> <span class="nx">_channelSet</span><span class="o">;</span>
+</span><span class='line'><span class="nx">remoteObj</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="nx">ResultEvent</span><span class="p">.</span><span class="nx">RESULT</span><span class="o">,</span> <span class="nx">onready</span><span class="p">);</span>
+</span><span class='line'><span class="nx">remoteObj</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="nx">FaultEvent</span><span class="p">.</span><span class="nx">FAULT</span><span class="o">,</span> <span class="nx">onfault</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>One of the coolest thing about putting RIA in a portlet via Flex/BlazeDS remoting services is that you get asynchronous services for free! It means no whole page refresh, ever, for your portal.
+Another nice thing is that since we use the standard portlet API to expose the BlazeDS services, all communication between your Flex component and the back-end services will be proxied through the portlet container resource servlet. What it means is that you can literally WSRP-enable your Flex portlet application if you want to and things would continue to work: no firewall setting to mess with, no blazeDS services to reconfigure.</p>
+
+<p><img src="/images/flex-portlet.jpeg" title="[Flex Portlet in OpenPortal]" ></p>
+
+<p>Source code and binary files:
+<a href="http://velcrotag.googlecode.com/files/flex-portlet.war">flex-portlet.war</a> (to be deployed in a portlet container)
+<a href="http://velcrotag.googlecode.com/files/flex-portlet.zip">flex-portlet.zip</a> (Source)</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Doug Ly</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-03-15T13:50:00-07:00" pubdate data-updated="true">Mar 15<span>th</span>, 2009</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/programming/'>programming</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://dmly.github.com/blog/2009/03/15/ria-portlet-made-possible-with-flex-remoting/" data-via="" data-counturl="http://dmly.github.com/blog/2009/03/15/ria-portlet-made-possible-with-flex-remoting/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2009/03/13/dbunit-flatxmldataset-export-using-groovy-builder/" title="Previous Post: DBUnit FlatXmlDataSet Export Using Groovy Builder">&laquo; DBUnit FlatXmlDataSet Export Using Groovy Builder</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2009/07/02/query-templating-for-hibernate-native-query/" title="Next Post: Query Templating for Hibernate Native Query">Query Templating for Hibernate Native Query &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2010/09/14/building-database-full-text-index-with-lucene/">Building Database Full Text Index with Lucene</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2010/08/27/asynchronous-calls-in-c-number/">Asynchronous Calls in C#</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2009/07/15/concurrent-amf-request-for-blazeds/">Concurrent AMF Request for BlazeDS</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2009/07/02/query-templating-for-hibernate-native-query/">Query Templating for Hibernate Native Query</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2009/03/15/ria-portlet-made-possible-with-flex-remoting/">RIA Portlet Made Possible With Flex Remoting</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2012 - Doug Ly -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'jvmisking';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://dmly.github.com/blog/2009/03/15/ria-portlet-made-possible-with-flex-remoting/';
+        var disqus_url = 'http://dmly.github.com/blog/2009/03/15/ria-portlet-made-possible-with-flex-remoting/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

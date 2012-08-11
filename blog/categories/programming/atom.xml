@@ -4,7 +4,7 @@
   <title><![CDATA[Category: programming | Ghost in the JVM]]></title>
   <link href="http://dmly.github.com/blog/categories/programming/atom.xml" rel="self"/>
   <link href="http://dmly.github.com/"/>
-  <updated>2012-08-10T22:19:07-07:00</updated>
+  <updated>2012-08-11T14:20:49-07:00</updated>
   <id>http://dmly.github.com/</id>
   <author>
     <name><![CDATA[Doug Ly]]></name>
@@ -14,337 +14,459 @@
 
   
   <entry>
-    <title type="html"><![CDATA[DBUnit FlatXmlDataSet Export Using Groovy Builder]]></title>
-    <link href="http://dmly.github.com/blog/2009/03/13/dbunit-flatxmldataset-export-using-groovy-builder/"/>
-    <updated>2009-03-13T20:35:00-07:00</updated>
-    <id>http://dmly.github.com/blog/2009/03/13/dbunit-flatxmldataset-export-using-groovy-builder</id>
-    <content type="html"><![CDATA[<p>Recently I have been using [DBUnit][1] to run my DAOs unit test with Spring and HSQL in memory database. One of the biggest challenge in testing the DAO layer is generating data to test with.
-Of course you could export data in your development database in style of insert statement files and import them into the test database before executing the test. But I think doing so still requires a lot of manual work
-for a busy developer. One nice thing about DbUnit is that you can export your test data into a single XML file and while setting up the unit test, you tell DbUnit to execute the import based on the XML data file.</p>
+    <title type="html"><![CDATA[Building Database Full Text Index with Lucene]]></title>
+    <link href="http://dmly.github.com/blog/2010/09/14/building-database-full-text-index-with-lucene/"/>
+    <updated>2010-09-14T14:15:00-07:00</updated>
+    <id>http://dmly.github.com/blog/2010/09/14/building-database-full-text-index-with-lucene</id>
+    <content type="html"><![CDATA[<p>I have this client table in Oracle having more than 3 million rows. One of the column is the client name in which our users want to have full text search support.
+Originally, Oracle context search feature was choosen by a group of consultants. May be we were maintaining the domain index correctly but its performance sucks.</p>
 
 <!-- more -->
 
 
-<p>Just for reference, a FlatXmlDataSet looks like this
-``` xml FlatXmlDataSet
-<dataset></p>
+<p>I spend most of my time troubleshooting this issue and found out that we need to run "optimize" to make the index perform well. But anyway I am tired of having to hear users' complaints
+everyday so I got rid of Oracle full text search and refactor the search service to use Apache Lucene.</p>
 
-<pre><code>&lt;table1 id='1' name='hello'/&gt;
-&lt;table1 id='2' name='world'/&gt;
+<p>Here is how is done:</p>
 
- &lt;table2 id='1' name='hello3232'/&gt;
-&lt;table2 id='3' name='hello323'/&gt;
+<ol>
+<li>Connect to the client table and get the rows need to be indexed. Of course I did this in batch of 20K rows each.
+You could gain significant performance of this data loading using a database connection pool and pulling data in parallel.</li>
+<li>Use Lucene to index the client name and store the client IDs for DB retrieval later on</li>
+</ol>
+
+
+<p>``` groovy Extracting Data for Indexing
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import groovy.sql.Sql;
+import com.mchange.v2.c3p0.ComboPooledDataSource;
+import java.util.concurrent.*</p>
+
+<p>ComboPooledDataSource ds = new ComboPooledDataSource()
+ds.driverClass = 'oracle.jdbc.driver.OracleDriver'
+ds.jdbcUrl = ''
+ds.user = ''
+ds.password = ''
+ds.minPoolSize = 2
+ds.maxPoolSize = 4
+ds.acquireIncrement = 1</p>
+
+<p>def stepCount = 20000
+BlockingQueue queue = new ArrayBlockingQueue(8);
+def pool = Executors.newFixedThreadPool(3);
+def ecs = new ExecutorCompletionService(pool);
+def submit = { c -> ecs.submit(c as Callable) }</p>
+
+<p>def sql = """
+select
+id, name
+from
+(
+select /<em>+ FIRST_ROW(${stepCount}) </em>/
+id, name, rownum rnum
+from
+atlas_client
+where
+id > 0
+and rownum &lt;= ?
+order by
+id asc
+)
+where
+rnum > ?
+"""</p>
+
+<p>def maxCount = new Sql(ds).firstRow('select count(1) as maxCount from atlas_client where id > 0'').maxCount;
+println "Max count: ${maxCount}"
+def range = (0..maxCount).step(stepCount)
+if (range[-1] &lt; maxCount) range &lt;&lt; maxCount</p>
+
+<p>def indexDir = new File('atlas_client_index');
+IndexWriter writer = new IndexWriter(indexDir, new StandardAnalyzer(), true);
+writer.setUseCompoundFile(false);</p>
+
+<p>def query = {low, hi ->
+  println "Querying from ${low} to ${hi}"
+  def rows = []
+  new Sql(ds).eachRow(sql, [hi, low]) {</p>
+
+<pre><code>row -&gt; rows &lt;&lt; row.toRowResult()
 </code></pre>
 
-<p></dataset>
+<p>  }
+  println "Finishing query. Return ${rows.size()} rows from ${low} to ${hi}"
+  return rows;
+}</p>
+
+<p>def createIndex = {array ->
+  array.each {</p>
+
+<pre><code>Document doc = new Document();
+doc.add(new Field("id", it.id.toString(), Field.Store.YES, Field.Index.NO));
+doc.add(new Field("name", it.name, Field.Store.YES, Field.Index.ANALYZED));
+writer.addDocument(doc);
+</code></pre>
+
+<p>  }
+}</p>
+
+<p>for (int i = 0; i &lt; range.size() - 1; i++)
+{
+  println "Submitting query for clients record from ${range[i]} to ${range[i+1]}"
+  def low = range[i]
+  def hi = range[i+1]
+  submit { query(low, hi) };
+}</p>
+
+<p>for (int i = 0; i &lt; range.size() - 1; i++)
+{
+  def results = ecs.take().get();
+  println "Results (${results.size()}) ready for clients record query, indexing..."
+  createIndex(results);
+  println "Indexing done."
+  writer.commit();
+}</p>
+
+<p>writer.close();
+pool.shutdown();
+```</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Asynchronous Calls in C#]]></title>
+    <link href="http://dmly.github.com/blog/2010/08/27/asynchronous-calls-in-c-number/"/>
+    <updated>2010-08-27T14:19:00-07:00</updated>
+    <id>http://dmly.github.com/blog/2010/08/27/asynchronous-calls-in-c-number</id>
+    <content type="html"><![CDATA[<p>Last December I started leading a team develop a Outlook addin for the firm.
+I admit that I am no C# developer. The last time I used C# was when I attended college years ago. But the group of consultants
+were let go and we have to jump in and take ownership of the project.</p>
+
+<p>I also have to admit that C# has a lot of language features that I really wish Java does too. Among them is the concept of delegate
+and function pointer used for asynchronous method calls. I know I can get the same thing with Groovy or Scala.</p>
+
+<!-- more -->
+
+
+<p>This is how I implement a asynchronous call in C#. The DoAsyncHelper class is an example of extension method, akin to Groovy's category concept.</p>
+
+<p>``` csharp
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Runtime.Remoting.Messaging;
+using System.Diagnostics;</p>
+
+<p>namespace AsyncIterator
+{
+   class Program
+   {</p>
+
+<pre><code>   static void Main(string[] args)
+   {
+       Console.Out.WriteLine("Calling a very slow method...");
+       Console.Out.WriteLine("Press Enter to Cancel.");
+       Console.Out.WriteLine("Current thread ID {0}", Thread.CurrentThread.GetHashCode());
+
+       int init = 4;
+
+       verySlowMethod.DoAsync(22, resultReady);
+
+       Console.ReadLine();
+   }
+
+   public static void resultReady(int result)
+   {
+       Console.Out.WriteLine("Current thread ID {0} when result ready", Thread.CurrentThread.GetHashCode());
+       Console.WriteLine("Result : {0}",  result);
+   }
+
+   public static Func&lt;double, int&gt; verySlowMethod = (double n) =&gt;
+   {
+       Console.Out.WriteLine("Current thread ID {0} in verySlowMethod", Thread.CurrentThread.GetHashCode());
+       Thread.Sleep(5000);
+       return (int) n *  (int) n;
+   };
+</code></pre>
+
+<p>   }</p>
+
+<p>   static class DoAsyncHelper
+   {</p>
+
+<pre><code>   public static void DoAsync&lt;T, V&gt;(this Func&lt;T, V&gt; f, T arg, Action&lt;V&gt; callback)
+   {
+       f.BeginInvoke(arg, result =&gt;
+           {
+               callback(f.EndInvoke(result));
+           }, null);
+   }
+</code></pre>
+
+<p>   }</p>
+
+<p> }
+```</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Concurrent AMF Request for BlazeDS]]></title>
+    <link href="http://dmly.github.com/blog/2009/07/15/concurrent-amf-request-for-blazeds/"/>
+    <updated>2009-07-15T14:12:00-07:00</updated>
+    <id>http://dmly.github.com/blog/2009/07/15/concurrent-amf-request-for-blazeds</id>
+    <content type="html"><![CDATA[<p>Requirement: AMF data service comes with BlazeDS servlet is asynchronous. One of the services provided is RemoteObject. RemoteObject calls are faster than WebServices and HTTPServices because the information is exchanged in binary.
+But RemoteObject itself has a not-too-well-known behavior. While it is true that RemoteObject services are asynchronous, they are not parallel.</p>
+
+<!-- more -->
+
+
+<p>Example: If you make 3 RemoteObject request simultaneously and let assume the 1st request takes 2 seconds, the 2nd requests takes 10, the 3rd takes 30 seconds. You result will come back in 42 seconds. In other word, you get the result when they ALL complete.
+This is because AMF gateway takes all the request and queues them up. It processes each in turn and when all have been run, returns back the results. This is not a bug.
+Most of the time, it is fine. In our application the issue shows its limitation. The app uses client-side caching to improve performance except for memos-related service.
+We also fire multiple requests at the same time, which includes the cached services as well as the memos-related services. Memo-related services would take a few seconds to run.
+This in turn defeats the purpose of cached services since all the service requests need to be processed sequentially.</p>
+
+<p>Solution:
+We define a separate http channel for the memos-related services to use. Other cached services use a different channel.</p>
+
+<p>``` xml service-config.xml
+<channel-definition id="my-amf" class="mx.messaging.channels.AMFChannel">
+  <endpoint url="http://{server.name}:{server.port}/{context.root}/messagebroker/amf" class="flex.messaging.endpoints.AMFEndpoint"/>
+  <properties></p>
+
+<pre><code>&lt;add-no-cache-headers&gt;false&lt;/add-no-cache-headers&gt;
+</code></pre>
+
+<p>  </properties>          <br/>
+</channel-definition></p>
+
+<p><channel-definition id="my-secure-amf" class="mx.messaging.channels.SecureAMFChannel">
+  <endpoint url="https://{server.name}:{server.port}/{context.root}/messagebroker/amfsecure" class="flex.messaging.endpoints.AMFEndpoint"/>
+  <properties></p>
+
+<pre><code>&lt;add-no-cache-headers&gt;false&lt;/add-no-cache-headers&gt;
+</code></pre>
+
+<p>  </properties>
+</channel-definition></p>
+
+<p><channel-definition id="my-amf2" class="mx.messaging.channels.AMFChannel">
+  <endpoint url="http://{server.name}:{server.port}/{context.root}/messagebroker/amf2" class="flex.messaging.endpoints.AMFEndpoint"/>
+  <properties></p>
+
+<pre><code>&lt;add-no-cache-headers&gt;false&lt;/add-no-cache-headers&gt;
+</code></pre>
+
+<p>  </properties>          <br/>
+</channel-definition></p>
+
+<p><channel-definition id="my-secure-amf2" class="mx.messaging.channels.SecureAMFChannel">
+  <endpoint url="https://{server.name}:{server.port}/{context.root}/messagebroker/amfsecure2" class="flex.messaging.endpoints.AMFEndpoint"/>
+  <properties></p>
+
+<pre><code>&lt;add-no-cache-headers&gt;false&lt;/add-no-cache-headers&gt;
+</code></pre>
+
+<p>  </properties>
+</channel-definition>
 ```</p>
 
-<p>DbUnit will create 2 rows for table1 and 2 rows for table2 in your schema. For more info please see this
-Now Groovy Builder, especially the MarkupBuilder is perfect for this kind of task: extract data from a query and build the XML file based on the extracted data.
-The code looks like this:</p>
+<p>``` xml remoting-config.xml
+<destination id="coverageService">
+  <properties></p>
 
-<p>``` groovy
-import groovy.sql.Sql
-import groovy.xml.MarkupBuilder</p>
-
-<p>sqlDriver = Sql.newInstance("jdbc:oracle:thin:@oracle_home:12345:sid",</p>
-
-<pre><code>                        "username", 
-                        "password", 
-                        "oracle.jdbc.driver.OracleDriver")
+<pre><code>&lt;factory&gt;spring&lt;/factory&gt;
+&lt;source&gt;coverageService&lt;/source&gt;
 </code></pre>
 
-<p>queries['USER'] =
-"""
-select
-*
-from
-USER
-where
-user_id = '12345'
-"""</p>
+<p>  </properties>
+  <channels></p>
 
-<p>queries['COVERAGE'] =
-"""
-select
-*
-from
-COVERAGE coo
-where
-coo.user_id = '12345'
-"""</p>
+<pre><code>&lt;channel ref="my-secure-amf" /&gt;
+&lt;channel ref="my-amf" /&gt;
+</code></pre>
 
-<p>buffer = new StringWriter()
-builder = new MarkupBuilder(buffer)</p>
+<p>  </channels>
+</destination></p>
 
-<p>builder.dataset()
+<p><destination id="activityService">
+  <properties></p>
+
+<pre><code>&lt;factory&gt;spring&lt;/factory&gt;
+&lt;source&gt;memosService&lt;/source&gt;
+</code></pre>
+
+<p>  </properties>
+  <channels></p>
+
+<pre><code>&lt;channel ref="my-secure-amf2" /&gt;
+&lt;channel ref="my-amf2" /&gt;
+</code></pre>
+
+<p>  </channels>
+</destination>
+```</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Query Templating for Hibernate Native Query]]></title>
+    <link href="http://dmly.github.com/blog/2009/07/02/query-templating-for-hibernate-native-query/"/>
+    <updated>2009-07-02T14:09:00-07:00</updated>
+    <id>http://dmly.github.com/blog/2009/07/02/query-templating-for-hibernate-native-query</id>
+    <content type="html"><![CDATA[<p>I recently encounter this kind of problematic requirement: making a native SQL in hibernate dynamic. The query should be written as a template. And based on the user selection, a concrete SQl statement is derived.
+It's pointless to have this conversation if we use HQL's query criteria of course. But with native SQL code, I admit there is no easy/legitimate way around but hack.</p>
+
+<!-- more -->
+
+
+<p>Technology stack: Hibernate with JPA through Srping JpaTemplate helper.</p>
+
+<p>So for example, suppose this is what my SQL template looks like</p>
+
+<p><code>xml Hibernate Native SQL
+&lt;sql-query name="findProductCoverageSummaryForSelectedUserInTeam" resultset-ref="productCoverageResult"&gt;
+  select
+  product_id_level_${level},
+  product_name_level_${level}
+  from product
+&lt;/sql-query&gt;
+</code></p>
+
+<p>This is what the coressponding Java code looks like</p>
+
+<p><code>java Using the Native SQL
+Session session = (Session) getTransactionalEntityManager().getDelegate();
+Query query = session.getNamedQuery("findProductCoverageSummaryForSelectedUserInTeam");
+String sql = StringUtils.replace(query.getQueryString(), "${level}", Integer.toString(productLevel));
+Query q = session.createSQLQuery(sql).setResultSetMapping("productCoverageResult");
+List&lt;Object[]&gt; results = q.list();
+</code></p>
+
+<p>I use the native query just as a placeholder for my sql template. Then I use Apache StringUtils to replace those variables with the actual values.
+I can't think of another better way to do it!</p>
+
+<p>If you need a more complicated template, ones with logical condition then use Velocity as the templating engine. Velocity is what I am using but FreeMarker also is a good
+candidate.</p>
+
+<p><code>xml Native SQL with Velocity template
+&lt;sql-query name="findProduct" resultset-ref="productCoverageResult"&gt;
+  select
+  product_id_level_$level,
+  product_name_level_$level
+  from
+  product   #if ($orderBy)   order by   $orderBy $sortType   #end
+&lt;/sql-query&gt;
+</code></p>
+
+<p>``` java Expand Native SQL Using Velocity Template
+VelocityContext ctx = new VelocityContext();
+ctx.put("level", level);
+ctx.put("orderBy", level);
+ctx.put("sortType", sortType);
+Session session = (Session) getTransactionalEntityManager().getDelegate();</p>
+
+<p>Query query = session.getNamedQuery("findProduct");
+String sql = null;
+try
 {</p>
 
-<pre><code>queries.each
-{
-    table,stmt -&gt;
-        sqlDriver.eachRow(stmt)
-                {row -&gt;
-                    map = [:]
-                    (0..&lt;row.getMetaData().columnCount).collect {
-                         col -&gt; map[row.getMetaData().getColumnName(col+1)] = row[col]
-                    }
-                    "${table}" (map)
-                }
-}
+<pre><code>StringWriter writer = new StringWriter();
+Velocity.init();
+Velocity.evaluate(ctx, writer, "VEL", query.getQueryString());
+sql = writer.getBuffer().toString();
+</code></pre>
+
+<p>}
+catch (Exception e)
+{</p>
+
+<pre><code>throw new RuntimeException(e);
 </code></pre>
 
 <p>}</p>
 
-<p>def fos = new File('dbunit_test.xml').withWriter
-{</p>
-
-<pre><code>it.write(buffer.toString())
-</code></pre>
-
-<p>}
-```
-For each query the map 'queries' define, MarkupBuilder will generate the FlatXmlDataSet format entries for the returned tuples.
-There we go your test data file!</p>
+<p>Query q = session.createSQLQuery(sql).setResultSetMapping("productCoverageResult");
+List&lt;Object[]> results = q.list();
+```</p>
 ]]></content>
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[State of WSRP Development: OpenPortal verus Apache wsrp4j]]></title>
-    <link href="http://dmly.github.com/blog/2009/01/14/state-of-wsrp-development-openportal-verus-apache-wsrp4j/"/>
-    <updated>2009-01-14T20:27:00-08:00</updated>
-    <id>http://dmly.github.com/blog/2009/01/14/state-of-wsrp-development-openportal-verus-apache-wsrp4j</id>
-    <content type="html"><![CDATA[<p>with wsrp4j project has become more and more dormant, I am seeking for another wsrp framework.
-To the best of my knowledge, beside the commercial framework out there from BEA Portal and IBM Websphere, Apache's wsrp4j used to be the
-only open source solution until Sun steps in and sponsors java.net's OpenPortal.
- My intention is to only replace the wsrp producer, but it is not a trivial task to just simply swap one producer and use it with the existing portlet container implementation.
-So go with OpenPortal container and its wsrp I am right now.</p>
+    <title type="html"><![CDATA[RIA Portlet Made Possible With Flex Remoting]]></title>
+    <link href="http://dmly.github.com/blog/2009/03/15/ria-portlet-made-possible-with-flex-remoting/"/>
+    <updated>2009-03-15T13:50:00-07:00</updated>
+    <id>http://dmly.github.com/blog/2009/03/15/ria-portlet-made-possible-with-flex-remoting</id>
+    <content type="html"><![CDATA[<p>Even though portlet development standard has been in existence for a while its popularity and advanced functionality hasn't got a lot of changes comparing to traditional web application development. Up until now, the <em>only</em> way to develop a portlet application is to use the dated (but obviously dominant) JSP technology. I know there have have been several attempts to bring advanced view engines into JSR-168/JSP-286 such as JSF prolet bridge or even the Wicket Portlet bridge the lanscape overall is pretty naive and dificult to comprehense. I can refer to [this artical][1] when it comes to the reasons why portlet has not become dominant as if it should be by now.</p>
 
 <!-- more -->
 
 
-<p>So far, my feeling with OpenPortal implementation is nothing but impressed. I'm impressed from
-how easy it is to setup the container/producer in Tomcat, the ease of portlet deployment to the active support of OpenPortal's community.
-Of course, I encounter a few glitches here and there but they all could be overcome within a matter of hours by looking at the code or requesting support of the community.</p>
+<p>In this story I will demonstrate my attempt to bring RIA development to a portlet environment. The technology stack I am using includes: Sun's OpenPortal portlet container, Flex RIA with blazeDS remoting. One of the most challenging obstacles developers face in developing RIA in a portlet environment is the asynchronous communication channel between the UI and the portlet itself. Portlet development somewhat is very similar to that of servlet development most of the time. But when it comes to technologies that tightly integrated into servlet, things start to break: try to put DWR/Wicket/Tapestry... in a portlet environment you would feel the pain!</p>
 
-<p>What about performance, how does OpenPortal perform compare to Apache portal suite.
-I gear up and setup the two framework to go head to head for a benchmark test.</p>
-
-<p>What I use:</p>
-
-<table width="100%" cellspacing="1" cellpadding="1" border="1" align="center">
-    <tbody>
-        <tr>
-            <td align="center"><strong>OpenPortal</strong></td>
-            <td align="center"><strong>Apache Portal</strong></td>
-        </tr>
-        <tr>
-            <td>OpenPortal portlet container milestone 4 (July 2008) <br />
-            OpenPortal wsrp implementation milestone 4 (July 2008)</td>
-            <td>Apache Portlet Container Pluto 1.0.1 Release (some time 2006??) <br />
-            Apache wsrp4j Revision 327501 on August 28 2005 (they have not a stable release yet)</td>
-        </tr>
-        <tr>
-            <td>Web Services stack: JAX-WS Sun's implementation</td>
-            <td>Web Services stack: Apache Axis 1.3</td>
-        </tr>
-    </tbody>
-</table>
-
-
-<p>All run from JDK 1.6 and tomcat 6 servlet.</p>
-
-<p>How do I conduct the test:
--  In the consumer side I setup a servlet filter to capture the time to complete a request: this can be used to benchmark the web services stacks.
--  in the producer side I also setup a filter to capture the time the producer take to process the request: this can be used to benchmark the portlet containers.
-I'm making one assumption here: producers' performance difference from both implementations can be ignored since it delegates most of its work to the portlet
-container.</p>
+<p>My attempt to put the BlazeDS remoting into a portlet environment was a success. But it doesn't mean I didn't run into any bumps along the way.
+Here how I did it: I have a regular portlet applicaption which provides nothing but a single JSP view. Then I create a Flex component which will be embedded in the JSP view. The Flex component has a single combo box widget which will make a remote RPC call via BlazeDS remoting to get the list data for itself. Now in the portlet application (which is nothing more than regular web app), I add blazeDS and all of the remote services support. To describe the setup is beyond the scope of this article but you can find many tutorials/articles online regarding the config. So far this is what we have:</p>
 
 <ul>
-<li>I create a simple portlet JSP generating a huge content: table with 500 rows full of text, roughly 3 MB in its final rendered HTML.</li>
-<li>Make 10 requests and take the average: discard the result of the very first request due to overhead of initialization of the wsrp engine from both framework
-I notice that OpenPortal takes less time to initialize. When both engines are ready, their performance are pretty identical:</li>
+<li> A portlet app with blazeDS remoting support</li>
+<li> A Flex component which will get data from remoting services</li>
+<li> A JSP view to embed the Flex component</li>
 </ul>
 
 
-<table width="100%" cellspacing="1" cellpadding="1" border="1">
-    <tbody>
-        <tr>
-            <td align="center"><strong>Benchmark Item</strong></td>
-            <td align="center"><strong>OpenPortal Consumer</strong></td>
-            <td align="center"><strong>Apache wsrp4j Consumer</strong></td>
-            <td align="center"><strong>OpenPortal Producer </strong></td>
-            <td align="center"><strong>Apache wsrp4j Producer</strong></td>
-        </tr>
-        <tr>
-            <td># of Requests</td>
-            <td>10</td>
-            <td>10</td>
-            <td>10</td>
-            <td>10</td>
-        </tr>
-        <tr>
-            <td>Min Time (ms)</td>
-            <td>1406</td>
-            <td>1641</td>
-            <td>438</td>
-            <td>468</td>
-        </tr>
-        <tr>
-            <td>Avg Time (ms)</td>
-            <td>1807.8</td>
-            <td>1736.3</td>
-            <td>611.2</td>
-            <td>666.9</td>
-        </tr>
-        <tr>
-            <td>Max Time (ms)</td>
-            <td>1985</td>
-            <td>2032</td>
-            <td>1047</td>
-            <td>859</td>
-        </tr>
-    </tbody>
-</table>
+<p>Now comes the critical section: making Flex component calling the remoting services from a portlet app.
+Normally when you build a flex application with remoting services, you provide a fixed services-config.xml containing the channel/endpoint configuration.
+This won't work in a portlet environment since you don't know the hostname, port numbers, context root, etc... before hand. All of those configurations depend on the portlet container implementation. To solve this issue I configure the Flex remoting services at runtime. In the JSP view embedding the Flex component I add a flashvars parameter to hold the BlazeDS remoting URL context. I advice that you use the standard portlet API to generate this URL instead of hardcoding it. For example in the JSP view, I get the remote service URL using this:</p>
 
+<p>``` html JSP</p>
 
-<p><em>Conclusion</em>
-If we continue to choose open source solution for our portal, OpenPortal would be the best choice at this moment.
-wsrp4j has not had any activity recently (3 years). Its community support is weak. The code is unstable: latest unstable release (0.5) won't even compatible with any Pluto container.
-While Apache pluto/jetspeed container already supports portlet spec 2.0 wsrp4j is still clinging at spec 1.0</p>
+<p><span style="font-family: Courier New;"><object ...></span><span style="font-family: Courier New;"><br>
+...<br>
+<span style="color: rgb(255, 0, 0);"><param name="flashvars" value='serviceUrl=<%= renderResponse.encodeURL(renderRequest.getContextPath()<br>
+    + "/messagebroker/amf") %>' /></span><br>
+<embed src='<%= renderResponse.encodeURL(renderRequest.getContextPath()<br>
+      + "/portlet.swf") %>'<br>
+    ...<br>
+    <span style="color: rgb(255, 0, 0);">flashVars='serviceUrl=<%= renderResponse.encodeURL(renderRequest.getContextPath()<br>
+      + "/messagebroker/amf") %>'</span><br>
+            ><br>
+        </embed><br>
+</object></span></p>
+```
 
-<p>from the last couple of weeks working with OpenPortal I feel the support is pretty strong. Whenever I report a bug, a response always follows the next day. Sometimes
-it comes with patches as well. OpenPortal will not work out of the box at this moment with our existing consumer but it would not take much time or effort to fix it.
-best of all, OpenPortal comes with the support of portlet 2.0 spec and wsrp version 2 spec!</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Autonomous Game Agent]]></title>
-    <link href="http://dmly.github.com/blog/2008/10/23/autonomous-game-agent/"/>
-    <updated>2008-10-23T18:57:00-07:00</updated>
-    <id>http://dmly.github.com/blog/2008/10/23/autonomous-game-agent</id>
-    <content type="html"><![CDATA[<p>I am always interested in game AI programming, specially autonomous game agents which move around and act on their own will but based on a set of pre-defined rules of course.
-After reading the first chapter of <a href="http://www.amazon.com/Programming-Game-Example-Mat-Buckland/dp/1556220782/ref=sr_1_5?ie=UTF8&amp;s=books&amp;qid=1224810375&amp;sr=8-5">Programming Game AI by Example</a> by Matt Buckland, I can understand the magic behind those intelligent behaviors. I am very impressed to know how simple it is  to create those behaviors. But it's definitely not simple if one is not familiar with trigonometry and geometric algebra.</p>
+Now in the flex component, you need to create the remote channel/endpoint programmatically:
 
-<p>The code presented in this book is all C++. And I have a hard time to make those code built in Visual C++ 2008. It is guaranteed to work with Visual C++ 2005 only!
-So I rolled up my sleeves and wrote my own code in Java. And I think this is the best way to test how much I understand the book.</p>
-
-<!-- more -->
-
-
-<p>So far, I have finished coding the following behaviors: arrive, seek, avoid, wandering and obstacle avoidance.</p>
-
-<p>I put those behaviors in a single applet illustrated here. It's just a bunch of flies flying around trying to avoid their predator, a spider may be!</p>
-
-<object classid="clsid:8AD9C840-044E-11D1-B3E9-00805F499D93" codebase="http://java.sun.com/update/1.4.2/jinstall-1_4_2_12-windows-i586.cab" width="500" height="500" standby="Loading Processing software..."  >    
-<param name="code" value="com.lyfam.game.agent.WanderingAvoidance" />
-<param name="archive" value="http://autonomous-game-agent.googlecode.com/svn/trunk/SteeringBehavior/wandering.jar" />
-
-<param name="mayscript" value="true" />
-<param name="scriptable" value="true" />
-    
-<param name="image" value="loading.gif" />
-
-<param name="boxmessage" value="Loading Processing software..." />
-<param name="boxbgcolor" value="#000000" />
-                    
-<param name="test_string" value="inner" />
+``` actionscript Channel
+var serviceUrl:String = Application.application.parameters.serviceUrl;
+var _channelSet:ChannelSet = new ChannelSet();
+var _amfChannel:AMFChannel = new AMFChannel("my-amf", serviceUrl);
+_channelSet.addChannel(_amfChannel);
                 
-<p>
-<strong>
-This browser does not have a Java Plug-in.
-<br />
-<a href="http://java.sun.com/products/plugin/downloads/index.html" title="Download Java Plug-in">
-Get the latest Java Plug-in here.
-</a>
+remoteObj = new RemoteObject("remoteService");
+remoteObj.channelSet = _channelSet;
+remoteObj.addEventListener(ResultEvent.RESULT, onready);
+remoteObj.addEventListener(FaultEvent.FAULT, onfault);
+```
 
-</strong>
-</p>
+One of the coolest thing about putting RIA in a portlet via Flex/BlazeDS remoting services is that you get asynchronous services for free! It means no whole page refresh, ever, for your portal.
+Another nice thing is that since we use the standard portlet API to expose the BlazeDS services, all communication between your Flex component and the back-end services will be proxied through the portlet container resource servlet. What it means is that you can literally WSRP-enable your Flex portlet application if you want to and things would continue to work: no firewall setting to mess with, no blazeDS services to reconfigure.
 
-</object>
+<img src="/images/flex-portlet.jpeg" title="[Flex Portlet in OpenPortal]" >
 
+Source code and binary files:
+[flex-portlet.war][2] (to be deployed in a portlet container)
+[flex-portlet.zip][3] (Source)
 
+[1]:http://today.java.net/pub/a/today/2009/01/20/jsr-286-portlet-irrelevance.html
+[2]:http://velcrotag.googlecode.com/files/flex-portlet.war
+[3]:http://velcrotag.googlecode.com/files/flex-portlet.zip
 
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Cairngorm and Flash Event]]></title>
-    <link href="http://dmly.github.com/blog/2008/07/28/cairngorm-and-flash-event/"/>
-    <updated>2008-07-28T18:46:00-07:00</updated>
-    <id>http://dmly.github.com/blog/2008/07/28/cairngorm-and-flash-event</id>
-    <content type="html"><![CDATA[<p>For my Flex project at work, I use Cairgorm as the MVC framework. Not that I like Cairgorn a lot but at the time our project starts it seems to be the de-facto framework for mid-to-big-mess Flex applications. Adobe also stands behind Cairgorm in supporting and consulting it.</p>
-
-<p>The learning curve is not so steep. I pick up the tutorial material available at Adobe website, specially the animated diagram is very helpful and learn to use the framework in less than a day. The second day I already begin to integrate it into our application.</p>
-
-<p>One thing annoys me most about this framework is that there is no way (sort of) for the UI to get notified when a remote call is done getting data and the result is available. I end up use some hack to get around it. For example, use a ChangeWatcher to monitor the model. When the result ready, the command object updates the model, just triggers the ChangeWatcher's propertyChange event.</p>
-
-<!-- more -->
-
-
-<p>This is kind of messy and the more I use ChangeWatcher, the more I tend to stay away from it if I could. Until I find a solution...</p>
-
-<p>Remember the event class you must extend from the CairngormEvent (not Flash event)?</p>
-
-<p>You just need to include a function object (yes, a functor) from the UI component you want Cairgorm to notify when the result is ready to the cairgorm event object before dispatching it. The in your command class, when the result come back, just invoke that function object.</p>
-
-<p> Sound complicated? Not so, here it is in code</p>
-
-<p>In your event class:</p>
-
-<p><code>actionscript Event Class
-class SampleEvent extends CairngormEvent
-{
-  public var someStuff:Object;
-  public var callbackFunctionObj:Function;
-}
-</code>
-In your Command class</p>
-
-<p>``` actionscript Command Class
-class SampleCommand implements Command, Responder</p>
-
-<p>{
-  private var callbackFunction:Function;
-  public void execute(event:CairgormEvent):void
-  {</p>
-
-<pre><code>  callbackFunction = event.callbackFunction;
-</code></pre>
-
-<p>  }</p>
-
-<p>  public void result(event:Event):void
-  {</p>
-
-<pre><code> // setting your model with the result
-  ....
- callbackFunction.call(null);
-</code></pre>
-
-<p>  }
-}
-```</p>
-
-<p>``` actionscript In The UI</p>
-
-<script>
-    var event:SampleEvent = new SampleEvent;
-    event.someStuff = new Stuff()
-    event.callbackFunctionObj = this.notfyMeWhenDataReady;
-   event.dispatch();
-
-    public void notfyMeWhenDataReady():void
-    {
-       // do whatever you want when the data is ready here
-    }
-</script>
-
-
-<p>```</p>
-
-<p>When the result is ready, the command object will invoke the callback function. Thus in the above example notfyMeWhenDataReady will be called!</p>
 ]]></content>
   </entry>
   
