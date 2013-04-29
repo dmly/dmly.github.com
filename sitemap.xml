@@ -1,11 +1,66 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>
     <url>
+<<<<<<< HEAD
         <loc>http://dmly.github.com/blog/archives/</loc>
         <lastmod>2012-08-08T14:02:01-07:00</lastmod>
     </url>
     <url>
         <loc>http://dmly.github.com/</loc>
         <lastmod>2012-08-08T14:02:01-07:00</lastmod>
+=======
+        <loc>http://dmly.github.com/blog/2008/07/28/cairngorm-and-flash-event/</loc>
+        <lastmod>2012-08-10T22:18:56-07:00</lastmod>
+    </url>
+    <url>
+        <loc>http://dmly.github.com/blog/2008/10/23/autonomous-game-agent/</loc>
+        <lastmod>2012-08-10T20:24:28-07:00</lastmod>
+    </url>
+    <url>
+        <loc>
+            http://dmly.github.com/blog/2009/01/14/state-of-wsrp-development-openportal-verus-apache-wsrp4j/
+        </loc>
+        <lastmod>2012-08-10T20:34:37-07:00</lastmod>
+    </url>
+    <url>
+        <loc>
+            http://dmly.github.com/blog/2009/03/13/dbunit-flatxmldataset-export-using-groovy-builder/
+        </loc>
+        <lastmod>2012-08-10T20:38:00-07:00</lastmod>
+    </url>
+    <url>
+        <loc>
+            http://dmly.github.com/blog/2009/03/15/ria-portlet-made-possible-with-flex-remoting/
+        </loc>
+        <lastmod>2012-08-11T14:07:55-07:00</lastmod>
+    </url>
+    <url>
+        <loc>
+            http://dmly.github.com/blog/2009/07/02/query-templating-for-hibernate-native-query/
+        </loc>
+        <lastmod>2012-08-11T14:12:06-07:00</lastmod>
+    </url>
+    <url>
+        <loc>http://dmly.github.com/blog/2009/07/15/concurrent-amf-request-for-blazeds/</loc>
+        <lastmod>2012-08-11T14:14:41-07:00</lastmod>
+    </url>
+    <url>
+        <loc>http://dmly.github.com/blog/2010/08/27/asynchronous-calls-in-c-number/</loc>
+        <lastmod>2012-08-11T14:20:27-07:00</lastmod>
+    </url>
+    <url>
+        <loc>
+            http://dmly.github.com/blog/2010/09/14/building-database-full-text-index-with-lucene/
+        </loc>
+        <lastmod>2012-08-11T14:18:55-07:00</lastmod>
+    </url>
+    <url>
+        <loc>http://dmly.github.com/blog/archives/</loc>
+        <lastmod>2012-08-11T14:20:27-07:00</lastmod>
+    </url>
+    <url>
+        <loc>http://dmly.github.com/</loc>
+        <lastmod>2012-08-11T14:20:27-07:00</lastmod>
+>>>>>>> bb1f29564b951cfd86859b039605510742441d76
     </url>
 </urlset>

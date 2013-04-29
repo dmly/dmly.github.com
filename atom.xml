@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
+<<<<<<< HEAD
   <title><![CDATA[My Octopress Blog]]></title>
   <link href="http://dmly.github.com/atom.xml" rel="self"/>
   <link href="http://dmly.github.com/"/>
@@ -8,9 +9,1101 @@
   <id>http://dmly.github.com/</id>
   <author>
     <name><![CDATA[Your Name]]></name>
+=======
+  <title><![CDATA[Ghost in the JVM]]></title>
+  <link href="http://dmly.github.com/atom.xml" rel="self"/>
+  <link href="http://dmly.github.com/"/>
+  <updated>2012-08-11T14:20:49-07:00</updated>
+  <id>http://dmly.github.com/</id>
+  <author>
+    <name><![CDATA[Doug Ly]]></name>
+>>>>>>> bb1f29564b951cfd86859b039605510742441d76
     
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
   
+<<<<<<< HEAD
+=======
+  <entry>
+    <title type="html"><![CDATA[Building Database Full Text Index with Lucene]]></title>
+    <link href="http://dmly.github.com/blog/2010/09/14/building-database-full-text-index-with-lucene/"/>
+    <updated>2010-09-14T14:15:00-07:00</updated>
+    <id>http://dmly.github.com/blog/2010/09/14/building-database-full-text-index-with-lucene</id>
+    <content type="html"><![CDATA[<p>I have this client table in Oracle having more than 3 million rows. One of the column is the client name in which our users want to have full text search support.
+Originally, Oracle context search feature was choosen by a group of consultants. May be we were maintaining the domain index correctly but its performance sucks.</p>
+
+<!-- more -->
+
+
+<p>I spend most of my time troubleshooting this issue and found out that we need to run &#8220;optimize&#8221; to make the index perform well. But anyway I am tired of having to hear users&#8217; complaints
+everyday so I got rid of Oracle full text search and refactor the search service to use Apache Lucene.</p>
+
+<p>Here is how is done:</p>
+
+<ol>
+<li>Connect to the client table and get the rows need to be indexed. Of course I did this in batch of 20K rows each.
+You could gain significant performance of this data loading using a database connection pool and pulling data in parallel.</li>
+<li>Use Lucene to index the client name and store the client IDs for DB retrieval later on</li>
+</ol>
+
+
+<figure class='code'><figcaption><span>Extracting Data for Indexing</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+<span class='line-number'>77</span>
+<span class='line-number'>78</span>
+<span class='line-number'>79</span>
+<span class='line-number'>80</span>
+<span class='line-number'>81</span>
+<span class='line-number'>82</span>
+<span class='line-number'>83</span>
+<span class='line-number'>84</span>
+<span class='line-number'>85</span>
+<span class='line-number'>86</span>
+<span class='line-number'>87</span>
+<span class='line-number'>88</span>
+<span class='line-number'>89</span>
+</pre></td><td class='code'><pre><code class='groovy'><span class='line'><span class="kn">import</span> <span class="nn">org.apache.lucene.index.IndexWriter</span><span class="o">;</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">org.apache.lucene.document.Document</span><span class="o">;</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">org.apache.lucene.document.Field</span><span class="o">;</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">org.apache.lucene.analysis.standard.StandardAnalyzer</span><span class="o">;</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">groovy.sql.Sql</span><span class="o">;</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">com.mchange.v2.c3p0.ComboPooledDataSource</span><span class="o">;</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">java.util.concurrent.*</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">ComboPooledDataSource</span> <span class="n">ds</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ComboPooledDataSource</span><span class="o">()</span>
+</span><span class='line'><span class="n">ds</span><span class="o">.</span><span class="na">driverClass</span> <span class="o">=</span> <span class="s1">&#39;oracle.jdbc.driver.OracleDriver&#39;</span>
+</span><span class='line'><span class="n">ds</span><span class="o">.</span><span class="na">jdbcUrl</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+</span><span class='line'><span class="n">ds</span><span class="o">.</span><span class="na">user</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+</span><span class='line'><span class="n">ds</span><span class="o">.</span><span class="na">password</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+</span><span class='line'><span class="n">ds</span><span class="o">.</span><span class="na">minPoolSize</span> <span class="o">=</span> <span class="mi">2</span>
+</span><span class='line'><span class="n">ds</span><span class="o">.</span><span class="na">maxPoolSize</span> <span class="o">=</span> <span class="mi">4</span>
+</span><span class='line'><span class="n">ds</span><span class="o">.</span><span class="na">acquireIncrement</span> <span class="o">=</span> <span class="mi">1</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">def</span> <span class="n">stepCount</span> <span class="o">=</span> <span class="mi">20000</span>
+</span><span class='line'><span class="n">BlockingQueue</span> <span class="n">queue</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayBlockingQueue</span><span class="o">(</span><span class="mi">8</span><span class="o">);</span>
+</span><span class='line'><span class="kt">def</span> <span class="n">pool</span> <span class="o">=</span> <span class="n">Executors</span><span class="o">.</span><span class="na">newFixedThreadPool</span><span class="o">(</span><span class="mi">3</span><span class="o">);</span>
+</span><span class='line'><span class="kt">def</span> <span class="n">ecs</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ExecutorCompletionService</span><span class="o">(</span><span class="n">pool</span><span class="o">);</span>
+</span><span class='line'><span class="kt">def</span> <span class="n">submit</span> <span class="o">=</span> <span class="o">{</span> <span class="n">c</span> <span class="o">-&gt;</span> <span class="n">ecs</span><span class="o">.</span><span class="na">submit</span><span class="o">(</span><span class="n">c</span> <span class="k">as</span> <span class="n">Callable</span><span class="o">)</span> <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">def</span> <span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+</span><span class='line'><span class="s2">select</span>
+</span><span class='line'><span class="s2">id, name</span>
+</span><span class='line'><span class="s2">from</span>
+</span><span class='line'><span class="s2">(</span>
+</span><span class='line'><span class="s2">select /*+ FIRST_ROW(${stepCount}) */</span>
+</span><span class='line'><span class="s2">id, name, rownum rnum</span>
+</span><span class='line'><span class="s2">from</span>
+</span><span class='line'><span class="s2">atlas_client</span>
+</span><span class='line'><span class="s2">where</span>
+</span><span class='line'><span class="s2">id &gt; 0</span>
+</span><span class='line'><span class="s2">and rownum &lt;= ?</span>
+</span><span class='line'><span class="s2">order by</span>
+</span><span class='line'><span class="s2">id asc</span>
+</span><span class='line'><span class="s2">)</span>
+</span><span class='line'><span class="s2">where</span>
+</span><span class='line'><span class="s2">rnum &gt; ?</span>
+</span><span class='line'><span class="s2">&quot;&quot;&quot;</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">def</span> <span class="n">maxCount</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Sql</span><span class="o">(</span><span class="n">ds</span><span class="o">).</span><span class="na">firstRow</span><span class="o">(</span><span class="s1">&#39;select count(1) as maxCount from atlas_client where id &gt; 0&#39;&#39;).maxCount;</span>
+</span><span class='line'><span class="s1">println &quot;Max count: ${maxCount}&quot;</span>
+</span><span class='line'><span class="s1">def range = (0..maxCount).step(stepCount)</span>
+</span><span class='line'><span class="s1">if (range[-1] &lt; maxCount) range &lt;&lt; maxCount</span>
+</span><span class='line'>
+</span><span class='line'><span class="s1">def indexDir = new File(&#39;</span><span class="n">atlas_client_index</span><span class="err">&#39;</span><span class="o">);</span>
+</span><span class='line'><span class="n">IndexWriter</span> <span class="n">writer</span> <span class="o">=</span> <span class="k">new</span> <span class="n">IndexWriter</span><span class="o">(</span><span class="n">indexDir</span><span class="o">,</span> <span class="k">new</span> <span class="n">StandardAnalyzer</span><span class="o">(),</span> <span class="kc">true</span><span class="o">);</span>
+</span><span class='line'><span class="n">writer</span><span class="o">.</span><span class="na">setUseCompoundFile</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">def</span> <span class="n">query</span> <span class="o">=</span> <span class="o">{</span><span class="n">low</span><span class="o">,</span> <span class="n">hi</span> <span class="o">-&gt;</span>
+</span><span class='line'>  <span class="n">println</span> <span class="s2">&quot;Querying from ${low} to ${hi}&quot;</span>
+</span><span class='line'>  <span class="kt">def</span> <span class="n">rows</span> <span class="o">=</span> <span class="o">[]</span>
+</span><span class='line'>  <span class="k">new</span> <span class="nf">Sql</span><span class="o">(</span><span class="n">ds</span><span class="o">).</span><span class="na">eachRow</span><span class="o">(</span><span class="n">sql</span><span class="o">,</span> <span class="o">[</span><span class="n">hi</span><span class="o">,</span> <span class="n">low</span><span class="o">])</span> <span class="o">{</span>
+</span><span class='line'>    <span class="n">row</span> <span class="o">-&gt;</span> <span class="n">rows</span> <span class="o">&lt;&lt;</span> <span class="n">row</span><span class="o">.</span><span class="na">toRowResult</span><span class="o">()</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>  <span class="n">println</span> <span class="s2">&quot;Finishing query. Return ${rows.size()} rows from ${low} to ${hi}&quot;</span>
+</span><span class='line'>  <span class="k">return</span> <span class="n">rows</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">def</span> <span class="n">createIndex</span> <span class="o">=</span> <span class="o">{</span><span class="n">array</span> <span class="o">-&gt;</span>
+</span><span class='line'>  <span class="n">array</span><span class="o">.</span><span class="na">each</span> <span class="o">{</span>
+</span><span class='line'>    <span class="n">Document</span> <span class="n">doc</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Document</span><span class="o">();</span>
+</span><span class='line'>    <span class="n">doc</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">Field</span><span class="o">(</span><span class="s2">&quot;id&quot;</span><span class="o">,</span> <span class="n">it</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">toString</span><span class="o">(),</span> <span class="n">Field</span><span class="o">.</span><span class="na">Store</span><span class="o">.</span><span class="na">YES</span><span class="o">,</span> <span class="n">Field</span><span class="o">.</span><span class="na">Index</span><span class="o">.</span><span class="na">NO</span><span class="o">));</span>
+</span><span class='line'>    <span class="n">doc</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">Field</span><span class="o">(</span><span class="s2">&quot;name&quot;</span><span class="o">,</span> <span class="n">it</span><span class="o">.</span><span class="na">name</span><span class="o">,</span> <span class="n">Field</span><span class="o">.</span><span class="na">Store</span><span class="o">.</span><span class="na">YES</span><span class="o">,</span> <span class="n">Field</span><span class="o">.</span><span class="na">Index</span><span class="o">.</span><span class="na">ANALYZED</span><span class="o">));</span>
+</span><span class='line'>    <span class="n">writer</span><span class="o">.</span><span class="na">addDocument</span><span class="o">(</span><span class="n">doc</span><span class="o">);</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">range</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>  <span class="n">println</span> <span class="s2">&quot;Submitting query for clients record from ${range[i]} to ${range[i+1]}&quot;</span>
+</span><span class='line'>  <span class="kt">def</span> <span class="n">low</span> <span class="o">=</span> <span class="n">range</span><span class="o">[</span><span class="n">i</span><span class="o">]</span>
+</span><span class='line'>  <span class="kt">def</span> <span class="n">hi</span> <span class="o">=</span> <span class="n">range</span><span class="o">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="o">]</span>
+</span><span class='line'>  <span class="n">submit</span> <span class="o">{</span> <span class="n">query</span><span class="o">(</span><span class="n">low</span><span class="o">,</span> <span class="n">hi</span><span class="o">)</span> <span class="o">};</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">range</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>  <span class="kt">def</span> <span class="n">results</span> <span class="o">=</span> <span class="n">ecs</span><span class="o">.</span><span class="na">take</span><span class="o">().</span><span class="na">get</span><span class="o">();</span>
+</span><span class='line'>  <span class="n">println</span> <span class="s2">&quot;Results (${results.size()}) ready for clients record query, indexing...&quot;</span>
+</span><span class='line'>  <span class="n">createIndex</span><span class="o">(</span><span class="n">results</span><span class="o">);</span>
+</span><span class='line'>  <span class="n">println</span> <span class="s2">&quot;Indexing done.&quot;</span>
+</span><span class='line'>  <span class="n">writer</span><span class="o">.</span><span class="na">commit</span><span class="o">();</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">writer</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+</span><span class='line'><span class="n">pool</span><span class="o">.</span><span class="na">shutdown</span><span class="o">();</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Asynchronous Calls in C#]]></title>
+    <link href="http://dmly.github.com/blog/2010/08/27/asynchronous-calls-in-c-number/"/>
+    <updated>2010-08-27T14:19:00-07:00</updated>
+    <id>http://dmly.github.com/blog/2010/08/27/asynchronous-calls-in-c-number</id>
+    <content type="html"><![CDATA[<p>Last December I started leading a team develop a Outlook addin for the firm.
+I admit that I am no C# developer. The last time I used C# was when I attended college years ago. But the group of consultants
+were let go and we have to jump in and take ownership of the project.</p>
+
+<p>I also have to admit that C# has a lot of language features that I really wish Java does too. Among them is the concept of delegate
+and function pointer used for asynchronous method calls. I know I can get the same thing with Groovy or Scala.</p>
+
+<!-- more -->
+
+
+<p>This is how I implement a asynchronous call in C#. The DoAsyncHelper class is an example of extension method, akin to Groovy&#8217;s category concept.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+</pre></td><td class='code'><pre><code class='csharp'><span class='line'><span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
+</span><span class='line'><span class="k">using</span> <span class="nn">System.Collections.Generic</span><span class="p">;</span>
+</span><span class='line'><span class="k">using</span> <span class="nn">System.Linq</span><span class="p">;</span>
+</span><span class='line'><span class="k">using</span> <span class="nn">System.Text</span><span class="p">;</span>
+</span><span class='line'><span class="k">using</span> <span class="nn">System.Threading</span><span class="p">;</span>
+</span><span class='line'><span class="k">using</span> <span class="nn">System.Runtime.Remoting.Messaging</span><span class="p">;</span>
+</span><span class='line'><span class="k">using</span> <span class="nn">System.Diagnostics</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">namespace</span> <span class="nn">AsyncIterator</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>   <span class="k">class</span> <span class="nc">Program</span>
+</span><span class='line'>   <span class="p">{</span>
+</span><span class='line'>
+</span><span class='line'>       <span class="k">static</span> <span class="k">void</span> <span class="nf">Main</span><span class="p">(</span><span class="kt">string</span><span class="p">[]</span> <span class="n">args</span><span class="p">)</span>
+</span><span class='line'>       <span class="p">{</span>
+</span><span class='line'>           <span class="n">Console</span><span class="p">.</span><span class="n">Out</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">&quot;Calling a very slow method...&quot;</span><span class="p">);</span>
+</span><span class='line'>           <span class="n">Console</span><span class="p">.</span><span class="n">Out</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">&quot;Press Enter to Cancel.&quot;</span><span class="p">);</span>
+</span><span class='line'>           <span class="n">Console</span><span class="p">.</span><span class="n">Out</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">&quot;Current thread ID {0}&quot;</span><span class="p">,</span> <span class="n">Thread</span><span class="p">.</span><span class="n">CurrentThread</span><span class="p">.</span><span class="n">GetHashCode</span><span class="p">());</span>
+</span><span class='line'>
+</span><span class='line'>           <span class="kt">int</span> <span class="n">init</span> <span class="p">=</span> <span class="m">4</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>           <span class="n">verySlowMethod</span><span class="p">.</span><span class="n">DoAsync</span><span class="p">(</span><span class="m">22</span><span class="p">,</span> <span class="n">resultReady</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>           <span class="n">Console</span><span class="p">.</span><span class="n">ReadLine</span><span class="p">();</span>
+</span><span class='line'>       <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>       <span class="k">public</span> <span class="k">static</span> <span class="k">void</span> <span class="nf">resultReady</span><span class="p">(</span><span class="kt">int</span> <span class="n">result</span><span class="p">)</span>
+</span><span class='line'>       <span class="p">{</span>
+</span><span class='line'>           <span class="n">Console</span><span class="p">.</span><span class="n">Out</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">&quot;Current thread ID {0} when result ready&quot;</span><span class="p">,</span> <span class="n">Thread</span><span class="p">.</span><span class="n">CurrentThread</span><span class="p">.</span><span class="n">GetHashCode</span><span class="p">());</span>
+</span><span class='line'>           <span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">&quot;Result : {0}&quot;</span><span class="p">,</span>  <span class="n">result</span><span class="p">);</span>
+</span><span class='line'>       <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>       <span class="k">public</span> <span class="k">static</span> <span class="n">Func</span><span class="p">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="kt">int</span><span class="p">&gt;</span> <span class="n">verySlowMethod</span> <span class="p">=</span> <span class="p">(</span><span class="kt">double</span> <span class="n">n</span><span class="p">)</span> <span class="p">=&gt;</span>
+</span><span class='line'>       <span class="p">{</span>
+</span><span class='line'>           <span class="n">Console</span><span class="p">.</span><span class="n">Out</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">&quot;Current thread ID {0} in verySlowMethod&quot;</span><span class="p">,</span> <span class="n">Thread</span><span class="p">.</span><span class="n">CurrentThread</span><span class="p">.</span><span class="n">GetHashCode</span><span class="p">());</span>
+</span><span class='line'>           <span class="n">Thread</span><span class="p">.</span><span class="n">Sleep</span><span class="p">(</span><span class="m">5000</span><span class="p">);</span>
+</span><span class='line'>           <span class="k">return</span> <span class="p">(</span><span class="kt">int</span><span class="p">)</span> <span class="n">n</span> <span class="p">*</span>  <span class="p">(</span><span class="kt">int</span><span class="p">)</span> <span class="n">n</span><span class="p">;</span>
+</span><span class='line'>       <span class="p">};</span>
+</span><span class='line'>   <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>   <span class="k">static</span> <span class="k">class</span> <span class="nc">DoAsyncHelper</span>
+</span><span class='line'>   <span class="p">{</span>
+</span><span class='line'>       <span class="k">public</span> <span class="k">static</span> <span class="k">void</span> <span class="n">DoAsync</span><span class="p">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">V</span><span class="p">&gt;(</span><span class="k">this</span> <span class="n">Func</span><span class="p">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">V</span><span class="p">&gt;</span> <span class="n">f</span><span class="p">,</span> <span class="n">T</span> <span class="n">arg</span><span class="p">,</span> <span class="n">Action</span><span class="p">&lt;</span><span class="n">V</span><span class="p">&gt;</span> <span class="n">callback</span><span class="p">)</span>
+</span><span class='line'>       <span class="p">{</span>
+</span><span class='line'>           <span class="n">f</span><span class="p">.</span><span class="n">BeginInvoke</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">result</span> <span class="p">=&gt;</span>
+</span><span class='line'>               <span class="p">{</span>
+</span><span class='line'>                   <span class="n">callback</span><span class="p">(</span><span class="n">f</span><span class="p">.</span><span class="n">EndInvoke</span><span class="p">(</span><span class="n">result</span><span class="p">));</span>
+</span><span class='line'>               <span class="p">},</span> <span class="k">null</span><span class="p">);</span>
+</span><span class='line'>       <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>   <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'> <span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Concurrent AMF Request for BlazeDS]]></title>
+    <link href="http://dmly.github.com/blog/2009/07/15/concurrent-amf-request-for-blazeds/"/>
+    <updated>2009-07-15T14:12:00-07:00</updated>
+    <id>http://dmly.github.com/blog/2009/07/15/concurrent-amf-request-for-blazeds</id>
+    <content type="html"><![CDATA[<p>Requirement: AMF data service comes with BlazeDS servlet is asynchronous. One of the services provided is RemoteObject. RemoteObject calls are faster than WebServices and HTTPServices because the information is exchanged in binary.
+But RemoteObject itself has a not-too-well-known behavior. While it is true that RemoteObject services are asynchronous, they are not parallel.</p>
+
+<!-- more -->
+
+
+<p>Example: If you make 3 RemoteObject request simultaneously and let assume the 1st request takes 2 seconds, the 2nd requests takes 10, the 3rd takes 30 seconds. You result will come back in 42 seconds. In other word, you get the result when they ALL complete.
+This is because AMF gateway takes all the request and queues them up. It processes each in turn and when all have been run, returns back the results. This is not a bug.
+Most of the time, it is fine. In our application the issue shows its limitation. The app uses client-side caching to improve performance except for memos-related service.
+We also fire multiple requests at the same time, which includes the cached services as well as the memos-related services. Memo-related services would take a few seconds to run.
+This in turn defeats the purpose of cached services since all the service requests need to be processed sequentially.</p>
+
+<p>Solution:
+We define a separate http channel for the memos-related services to use. Other cached services use a different channel.</p>
+
+<figure class='code'><figcaption><span>service-config.xml</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="nt">&lt;channel-definition</span> <span class="na">id=</span><span class="s">&quot;my-amf&quot;</span> <span class="na">class=</span><span class="s">&quot;mx.messaging.channels.AMFChannel&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;endpoint</span> <span class="na">url=</span><span class="s">&quot;http://{server.name}:{server.port}/{context.root}/messagebroker/amf&quot;</span> <span class="na">class=</span><span class="s">&quot;flex.messaging.endpoints.AMFEndpoint&quot;</span><span class="nt">/&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;properties&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;add-no-cache-headers&gt;</span>false<span class="nt">&lt;/add-no-cache-headers&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;/properties&gt;</span>
+</span><span class='line'><span class="nt">&lt;/channel-definition&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;channel-definition</span> <span class="na">id=</span><span class="s">&quot;my-secure-amf&quot;</span> <span class="na">class=</span><span class="s">&quot;mx.messaging.channels.SecureAMFChannel&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;endpoint</span> <span class="na">url=</span><span class="s">&quot;https://{server.name}:{server.port}/{context.root}/messagebroker/amfsecure&quot;</span> <span class="na">class=</span><span class="s">&quot;flex.messaging.endpoints.AMFEndpoint&quot;</span><span class="nt">/&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;properties&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;add-no-cache-headers&gt;</span>false<span class="nt">&lt;/add-no-cache-headers&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;/properties&gt;</span>
+</span><span class='line'><span class="nt">&lt;/channel-definition&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;channel-definition</span> <span class="na">id=</span><span class="s">&quot;my-amf2&quot;</span> <span class="na">class=</span><span class="s">&quot;mx.messaging.channels.AMFChannel&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;endpoint</span> <span class="na">url=</span><span class="s">&quot;http://{server.name}:{server.port}/{context.root}/messagebroker/amf2&quot;</span> <span class="na">class=</span><span class="s">&quot;flex.messaging.endpoints.AMFEndpoint&quot;</span><span class="nt">/&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;properties&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;add-no-cache-headers&gt;</span>false<span class="nt">&lt;/add-no-cache-headers&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;/properties&gt;</span>
+</span><span class='line'><span class="nt">&lt;/channel-definition&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;channel-definition</span> <span class="na">id=</span><span class="s">&quot;my-secure-amf2&quot;</span> <span class="na">class=</span><span class="s">&quot;mx.messaging.channels.SecureAMFChannel&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;endpoint</span> <span class="na">url=</span><span class="s">&quot;https://{server.name}:{server.port}/{context.root}/messagebroker/amfsecure2&quot;</span> <span class="na">class=</span><span class="s">&quot;flex.messaging.endpoints.AMFEndpoint&quot;</span><span class="nt">/&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;properties&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;add-no-cache-headers&gt;</span>false<span class="nt">&lt;/add-no-cache-headers&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;/properties&gt;</span>
+</span><span class='line'><span class="nt">&lt;/channel-definition&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span>remoting-config.xml</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="nt">&lt;destination</span> <span class="na">id=</span><span class="s">&quot;coverageService&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;properties&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;factory&gt;</span>spring<span class="nt">&lt;/factory&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;source&gt;</span>coverageService<span class="nt">&lt;/source&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;/properties&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;channels&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;channel</span> <span class="na">ref=</span><span class="s">&quot;my-secure-amf&quot;</span> <span class="nt">/&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;channel</span> <span class="na">ref=</span><span class="s">&quot;my-amf&quot;</span> <span class="nt">/&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;/channels&gt;</span>
+</span><span class='line'><span class="nt">&lt;/destination&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;destination</span> <span class="na">id=</span><span class="s">&quot;activityService&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;properties&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;factory&gt;</span>spring<span class="nt">&lt;/factory&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;source&gt;</span>memosService<span class="nt">&lt;/source&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;/properties&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;channels&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;channel</span> <span class="na">ref=</span><span class="s">&quot;my-secure-amf2&quot;</span> <span class="nt">/&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;channel</span> <span class="na">ref=</span><span class="s">&quot;my-amf2&quot;</span> <span class="nt">/&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;/channels&gt;</span>
+</span><span class='line'><span class="nt">&lt;/destination&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Query Templating for Hibernate Native Query]]></title>
+    <link href="http://dmly.github.com/blog/2009/07/02/query-templating-for-hibernate-native-query/"/>
+    <updated>2009-07-02T14:09:00-07:00</updated>
+    <id>http://dmly.github.com/blog/2009/07/02/query-templating-for-hibernate-native-query</id>
+    <content type="html"><![CDATA[<p>I recently encounter this kind of problematic requirement: making a native SQL in hibernate dynamic. The query should be written as a template. And based on the user selection, a concrete SQl statement is derived.
+It&#8217;s pointless to have this conversation if we use HQL&#8217;s query criteria of course. But with native SQL code, I admit there is no easy/legitimate way around but hack.</p>
+
+<!-- more -->
+
+
+<p>Technology stack: Hibernate with JPA through Srping JpaTemplate helper.</p>
+
+<p>So for example, suppose this is what my SQL template looks like</p>
+
+<figure class='code'><figcaption><span>Hibernate Native SQL</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="nt">&lt;sql-query</span> <span class="na">name=</span><span class="s">&quot;findProductCoverageSummaryForSelectedUserInTeam&quot;</span> <span class="na">resultset-ref=</span><span class="s">&quot;productCoverageResult&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>  select
+</span><span class='line'>  product_id_level_${level},
+</span><span class='line'>  product_name_level_${level}
+</span><span class='line'>  from product
+</span><span class='line'><span class="nt">&lt;/sql-query&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This is what the coressponding Java code looks like</p>
+
+<figure class='code'><figcaption><span>Using the Native SQL</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">Session</span> <span class="n">session</span> <span class="o">=</span> <span class="o">(</span><span class="n">Session</span><span class="o">)</span> <span class="n">getTransactionalEntityManager</span><span class="o">().</span><span class="na">getDelegate</span><span class="o">();</span>
+</span><span class='line'><span class="n">Query</span> <span class="n">query</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="na">getNamedQuery</span><span class="o">(</span><span class="s">&quot;findProductCoverageSummaryForSelectedUserInTeam&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="n">String</span> <span class="n">sql</span> <span class="o">=</span> <span class="n">StringUtils</span><span class="o">.</span><span class="na">replace</span><span class="o">(</span><span class="n">query</span><span class="o">.</span><span class="na">getQueryString</span><span class="o">(),</span> <span class="s">&quot;${level}&quot;</span><span class="o">,</span> <span class="n">Integer</span><span class="o">.</span><span class="na">toString</span><span class="o">(</span><span class="n">productLevel</span><span class="o">));</span>
+</span><span class='line'><span class="n">Query</span> <span class="n">q</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="na">createSQLQuery</span><span class="o">(</span><span class="n">sql</span><span class="o">).</span><span class="na">setResultSetMapping</span><span class="o">(</span><span class="s">&quot;productCoverageResult&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="n">List</span><span class="o">&lt;</span><span class="n">Object</span><span class="o">[]&gt;</span> <span class="n">results</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="na">list</span><span class="o">();</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>I use the native query just as a placeholder for my sql template. Then I use Apache StringUtils to replace those variables with the actual values.
+I can&#8217;t think of another better way to do it!</p>
+
+<p>If you need a more complicated template, ones with logical condition then use Velocity as the templating engine. Velocity is what I am using but FreeMarker also is a good
+candidate.</p>
+
+<figure class='code'><figcaption><span>Native SQL with Velocity template</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="nt">&lt;sql-query</span> <span class="na">name=</span><span class="s">&quot;findProduct&quot;</span> <span class="na">resultset-ref=</span><span class="s">&quot;productCoverageResult&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>  select
+</span><span class='line'>  product_id_level_$level,
+</span><span class='line'>  product_name_level_$level
+</span><span class='line'>  from
+</span><span class='line'>  product   #if ($orderBy)   order by   $orderBy $sortType   #end
+</span><span class='line'><span class="nt">&lt;/sql-query&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span>Expand Native SQL Using Velocity Template</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">VelocityContext</span> <span class="n">ctx</span> <span class="o">=</span> <span class="k">new</span> <span class="n">VelocityContext</span><span class="o">();</span>
+</span><span class='line'><span class="n">ctx</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;level&quot;</span><span class="o">,</span> <span class="n">level</span><span class="o">);</span>
+</span><span class='line'><span class="n">ctx</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;orderBy&quot;</span><span class="o">,</span> <span class="n">level</span><span class="o">);</span>
+</span><span class='line'><span class="n">ctx</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;sortType&quot;</span><span class="o">,</span> <span class="n">sortType</span><span class="o">);</span>
+</span><span class='line'><span class="n">Session</span> <span class="n">session</span> <span class="o">=</span> <span class="o">(</span><span class="n">Session</span><span class="o">)</span> <span class="n">getTransactionalEntityManager</span><span class="o">().</span><span class="na">getDelegate</span><span class="o">();</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Query</span> <span class="n">query</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="na">getNamedQuery</span><span class="o">(</span><span class="s">&quot;findProduct&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="n">String</span> <span class="n">sql</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+</span><span class='line'><span class="k">try</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="n">StringWriter</span> <span class="n">writer</span> <span class="o">=</span> <span class="k">new</span> <span class="n">StringWriter</span><span class="o">();</span>
+</span><span class='line'>    <span class="n">Velocity</span><span class="o">.</span><span class="na">init</span><span class="o">();</span>
+</span><span class='line'>    <span class="n">Velocity</span><span class="o">.</span><span class="na">evaluate</span><span class="o">(</span><span class="n">ctx</span><span class="o">,</span> <span class="n">writer</span><span class="o">,</span> <span class="s">&quot;VEL&quot;</span><span class="o">,</span> <span class="n">query</span><span class="o">.</span><span class="na">getQueryString</span><span class="o">());</span>
+</span><span class='line'>    <span class="n">sql</span> <span class="o">=</span> <span class="n">writer</span><span class="o">.</span><span class="na">getBuffer</span><span class="o">().</span><span class="na">toString</span><span class="o">();</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="k">throw</span> <span class="k">new</span> <span class="nf">RuntimeException</span><span class="o">(</span><span class="n">e</span><span class="o">);</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">Query</span> <span class="n">q</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="na">createSQLQuery</span><span class="o">(</span><span class="n">sql</span><span class="o">).</span><span class="na">setResultSetMapping</span><span class="o">(</span><span class="s">&quot;productCoverageResult&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="n">List</span><span class="o">&lt;</span><span class="n">Object</span><span class="o">[]&gt;</span> <span class="n">results</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="na">list</span><span class="o">();</span>
+</span></code></pre></td></tr></table></div></figure>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[RIA Portlet Made Possible With Flex Remoting]]></title>
+    <link href="http://dmly.github.com/blog/2009/03/15/ria-portlet-made-possible-with-flex-remoting/"/>
+    <updated>2009-03-15T13:50:00-07:00</updated>
+    <id>http://dmly.github.com/blog/2009/03/15/ria-portlet-made-possible-with-flex-remoting</id>
+    <content type="html"><![CDATA[<p>Even though portlet development standard has been in existence for a while its popularity and advanced functionality hasn&#8217;t got a lot of changes comparing to traditional web application development. Up until now, the <em>only</em> way to develop a portlet application is to use the dated (but obviously dominant) JSP technology. I know there have have been several attempts to bring advanced view engines into JSR-168/JSP-286 such as JSF prolet bridge or even the Wicket Portlet bridge the lanscape overall is pretty naive and dificult to comprehense. I can refer to <a href="http://today.java.net/pub/a/today/2009/01/20/jsr-286-portlet-irrelevance.html">this artical</a> when it comes to the reasons why portlet has not become dominant as if it should be by now.</p>
+
+<!-- more -->
+
+
+<p>In this story I will demonstrate my attempt to bring RIA development to a portlet environment. The technology stack I am using includes: Sun&#8217;s OpenPortal portlet container, Flex RIA with blazeDS remoting. One of the most challenging obstacles developers face in developing RIA in a portlet environment is the asynchronous communication channel between the UI and the portlet itself. Portlet development somewhat is very similar to that of servlet development most of the time. But when it comes to technologies that tightly integrated into servlet, things start to break: try to put DWR/Wicket/Tapestry&#8230; in a portlet environment you would feel the pain!</p>
+
+<p>My attempt to put the BlazeDS remoting into a portlet environment was a success. But it doesn&#8217;t mean I didn&#8217;t run into any bumps along the way.
+Here how I did it: I have a regular portlet applicaption which provides nothing but a single JSP view. Then I create a Flex component which will be embedded in the JSP view. The Flex component has a single combo box widget which will make a remote RPC call via BlazeDS remoting to get the list data for itself. Now in the portlet application (which is nothing more than regular web app), I add blazeDS and all of the remote services support. To describe the setup is beyond the scope of this article but you can find many tutorials/articles online regarding the config. So far this is what we have:</p>
+
+<ul>
+<li> A portlet app with blazeDS remoting support</li>
+<li> A Flex component which will get data from remoting services</li>
+<li> A JSP view to embed the Flex component</li>
+</ul>
+
+
+<p>Now comes the critical section: making Flex component calling the remoting services from a portlet app.
+Normally when you build a flex application with remoting services, you provide a fixed services-config.xml containing the channel/endpoint configuration.
+This won&#8217;t work in a portlet environment since you don&#8217;t know the hostname, port numbers, context root, etc&#8230; before hand. All of those configurations depend on the portlet container implementation. To solve this issue I configure the Flex remoting services at runtime. In the JSP view embedding the Flex component I add a flashvars parameter to hold the BlazeDS remoting URL context. I advice that you use the standard portlet API to generate this URL instead of hardcoding it. For example in the JSP view, I get the remote service URL using this:</p>
+
+<figure class='code'><figcaption><span>JSP</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;p&gt;&lt;span</span> <span class="na">style=</span><span class="s">&quot;font-family: Courier New;&quot;</span><span class="nt">&gt;&lt;object</span> <span class="err">...</span><span class="nt">&gt;&lt;/span&gt;&lt;span</span> <span class="na">style=</span><span class="s">&quot;font-family: Courier New;&quot;</span><span class="nt">&gt;&lt;br&gt;</span>
+</span><span class='line'>...<span class="nt">&lt;br&gt;</span>
+</span><span class='line'><span class="nt">&lt;span</span> <span class="na">style=</span><span class="s">&quot;color: rgb(255, 0, 0);&quot;</span><span class="nt">&gt;&lt;param</span> <span class="na">name=</span><span class="s">&quot;flashvars&quot;</span> <span class="na">value=</span><span class="s">&#39;serviceUrl=&lt;%= renderResponse.encodeURL(renderRequest.getContextPath()&lt;br&gt;</span>
+</span><span class='line'><span class="s">    + &quot;/messagebroker/amf&quot;) %&gt;&#39;</span> <span class="nt">/&gt;&lt;/span&gt;&lt;br&gt;</span>
+</span><span class='line'><span class="nt">&lt;embed</span> <span class="na">src=</span><span class="s">&#39;&lt;%= renderResponse.encodeURL(renderRequest.getContextPath()&lt;br&gt;</span>
+</span><span class='line'><span class="s">      + &quot;/portlet.swf&quot;) %&gt;&#39;</span><span class="err">&lt;</span><span class="na">br</span><span class="nt">&gt;</span>
+</span><span class='line'>    ...<span class="nt">&lt;br&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;span</span> <span class="na">style=</span><span class="s">&quot;color: rgb(255, 0, 0);&quot;</span><span class="nt">&gt;</span>flashVars=&#39;serviceUrl=<span class="err">&lt;</span>%= renderResponse.encodeURL(renderRequest.getContextPath()<span class="nt">&lt;br&gt;</span>
+</span><span class='line'>      + &quot;/messagebroker/amf&quot;) %&gt;&#39;<span class="nt">&lt;/span&gt;&lt;br&gt;</span>
+</span><span class='line'>            &gt;<span class="nt">&lt;br&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;/embed&gt;&lt;br&gt;</span>
+</span><span class='line'><span class="nt">&lt;/object&gt;&lt;/span&gt;&lt;/p&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now in the flex component, you need to create the remote channel/endpoint programmatically:</p>
+
+<figure class='code'><figcaption><span>Channel</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='actionscript'><span class='line'><span class="k">var</span> <span class="nx">serviceUrl</span><span class="o">:</span><span class="nb">String</span> <span class="o">=</span> <span class="nx">Application</span><span class="p">.</span><span class="nx">application</span><span class="p">.</span><span class="nx">parameters</span><span class="p">.</span><span class="nx">serviceUrl</span><span class="o">;</span>
+</span><span class='line'><span class="k">var</span> <span class="nx">_channelSet</span><span class="o">:</span><span class="nx">ChannelSet</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ChannelSet</span><span class="p">();</span>
+</span><span class='line'><span class="k">var</span> <span class="nx">_amfChannel</span><span class="o">:</span><span class="nx">AMFChannel</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">AMFChannel</span><span class="p">(</span><span class="s2">&quot;my-amf&quot;</span><span class="o">,</span> <span class="nx">serviceUrl</span><span class="p">);</span>
+</span><span class='line'><span class="nx">_channelSet</span><span class="p">.</span><span class="nx">addChannel</span><span class="p">(</span><span class="nx">_amfChannel</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">remoteObj</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">RemoteObject</span><span class="p">(</span><span class="s2">&quot;remoteService&quot;</span><span class="p">);</span>
+</span><span class='line'><span class="nx">remoteObj</span><span class="p">.</span><span class="nx">channelSet</span> <span class="o">=</span> <span class="nx">_channelSet</span><span class="o">;</span>
+</span><span class='line'><span class="nx">remoteObj</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="nx">ResultEvent</span><span class="p">.</span><span class="nx">RESULT</span><span class="o">,</span> <span class="nx">onready</span><span class="p">);</span>
+</span><span class='line'><span class="nx">remoteObj</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="nx">FaultEvent</span><span class="p">.</span><span class="nx">FAULT</span><span class="o">,</span> <span class="nx">onfault</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>One of the coolest thing about putting RIA in a portlet via Flex/BlazeDS remoting services is that you get asynchronous services for free! It means no whole page refresh, ever, for your portal.
+Another nice thing is that since we use the standard portlet API to expose the BlazeDS services, all communication between your Flex component and the back-end services will be proxied through the portlet container resource servlet. What it means is that you can literally WSRP-enable your Flex portlet application if you want to and things would continue to work: no firewall setting to mess with, no blazeDS services to reconfigure.</p>
+
+<p><img src="http://dmly.github.com/images/flex-portlet.jpeg" title="[Flex Portlet in OpenPortal]" ></p>
+
+<p>Source code and binary files:
+<a href="http://velcrotag.googlecode.com/files/flex-portlet.war">flex-portlet.war</a> (to be deployed in a portlet container)
+<a href="http://velcrotag.googlecode.com/files/flex-portlet.zip">flex-portlet.zip</a> (Source)</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[DBUnit FlatXmlDataSet Export Using Groovy Builder]]></title>
+    <link href="http://dmly.github.com/blog/2009/03/13/dbunit-flatxmldataset-export-using-groovy-builder/"/>
+    <updated>2009-03-13T20:35:00-07:00</updated>
+    <id>http://dmly.github.com/blog/2009/03/13/dbunit-flatxmldataset-export-using-groovy-builder</id>
+    <content type="html"><![CDATA[<p>Recently I have been using [DBUnit][1] to run my DAOs unit test with Spring and HSQL in memory database. One of the biggest challenge in testing the DAO layer is generating data to test with.
+Of course you could export data in your development database in style of insert statement files and import them into the test database before executing the test. But I think doing so still requires a lot of manual work
+for a busy developer. One nice thing about DbUnit is that you can export your test data into a single XML file and while setting up the unit test, you tell DbUnit to execute the import based on the XML data file.</p>
+
+<!-- more -->
+
+
+<p>Just for reference, a FlatXmlDataSet looks like this</p>
+
+<figure class='code'><figcaption><span>FlatXmlDataSet</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="nt">&lt;dataset&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;table1</span> <span class="na">id=</span><span class="s">&#39;1&#39;</span> <span class="na">name=</span><span class="s">&#39;hello&#39;</span><span class="nt">/&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;table1</span> <span class="na">id=</span><span class="s">&#39;2&#39;</span> <span class="na">name=</span><span class="s">&#39;world&#39;</span><span class="nt">/&gt;</span>
+</span><span class='line'>
+</span><span class='line'>     <span class="nt">&lt;table2</span> <span class="na">id=</span><span class="s">&#39;1&#39;</span> <span class="na">name=</span><span class="s">&#39;hello3232&#39;</span><span class="nt">/&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;table2</span> <span class="na">id=</span><span class="s">&#39;3&#39;</span> <span class="na">name=</span><span class="s">&#39;hello323&#39;</span><span class="nt">/&gt;</span>
+</span><span class='line'><span class="nt">&lt;/dataset&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>DbUnit will create 2 rows for table1 and 2 rows for table2 in your schema. For more info please see this
+Now Groovy Builder, especially the MarkupBuilder is perfect for this kind of task: extract data from a query and build the XML file based on the extracted data.
+The code looks like this:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+</pre></td><td class='code'><pre><code class='groovy'><span class='line'><span class="kn">import</span> <span class="nn">groovy.sql.Sql</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">groovy.xml.MarkupBuilder</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">sqlDriver</span> <span class="o">=</span> <span class="n">Sql</span><span class="o">.</span><span class="na">newInstance</span><span class="o">(</span><span class="s2">&quot;jdbc:oracle:thin:@oracle_home:12345:sid&quot;</span><span class="o">,</span>
+</span><span class='line'>                            <span class="s2">&quot;username&quot;</span><span class="o">,</span>
+</span><span class='line'>                            <span class="s2">&quot;password&quot;</span><span class="o">,</span>
+</span><span class='line'>                            <span class="s2">&quot;oracle.jdbc.driver.OracleDriver&quot;</span><span class="o">)</span>
+</span><span class='line'><span class="n">queries</span><span class="o">[</span><span class="s1">&#39;USER&#39;</span><span class="o">]</span> <span class="o">=</span>
+</span><span class='line'><span class="s2">&quot;&quot;&quot;</span>
+</span><span class='line'><span class="s2">select</span>
+</span><span class='line'><span class="s2">*</span>
+</span><span class='line'><span class="s2">from</span>
+</span><span class='line'><span class="s2">USER</span>
+</span><span class='line'><span class="s2">where</span>
+</span><span class='line'><span class="s2">user_id = &#39;12345&#39;</span>
+</span><span class='line'><span class="s2">&quot;&quot;&quot;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">queries</span><span class="o">[</span><span class="s1">&#39;COVERAGE&#39;</span><span class="o">]</span> <span class="o">=</span>
+</span><span class='line'><span class="s2">&quot;&quot;&quot;</span>
+</span><span class='line'><span class="s2">select</span>
+</span><span class='line'><span class="s2">*</span>
+</span><span class='line'><span class="s2">from</span>
+</span><span class='line'><span class="s2">COVERAGE coo</span>
+</span><span class='line'><span class="s2">where</span>
+</span><span class='line'><span class="s2">coo.user_id = &#39;12345&#39;</span>
+</span><span class='line'><span class="s2">&quot;&quot;&quot;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">buffer</span> <span class="o">=</span> <span class="k">new</span> <span class="n">StringWriter</span><span class="o">()</span>
+</span><span class='line'><span class="n">builder</span> <span class="o">=</span> <span class="k">new</span> <span class="n">MarkupBuilder</span><span class="o">(</span><span class="n">buffer</span><span class="o">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">builder</span><span class="o">.</span><span class="na">dataset</span><span class="o">()</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="n">queries</span><span class="o">.</span><span class="na">each</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>        <span class="n">table</span><span class="o">,</span><span class="n">stmt</span> <span class="o">-&gt;</span>
+</span><span class='line'>            <span class="n">sqlDriver</span><span class="o">.</span><span class="na">eachRow</span><span class="o">(</span><span class="n">stmt</span><span class="o">)</span>
+</span><span class='line'>                    <span class="o">{</span><span class="n">row</span> <span class="o">-&gt;</span>
+</span><span class='line'>                        <span class="n">map</span> <span class="o">=</span> <span class="o">[:]</span>
+</span><span class='line'>                        <span class="o">(</span><span class="mi">0</span><span class="o">..&lt;</span><span class="n">row</span><span class="o">.</span><span class="na">getMetaData</span><span class="o">().</span><span class="na">columnCount</span><span class="o">).</span><span class="na">collect</span> <span class="o">{</span>
+</span><span class='line'>                             <span class="n">col</span> <span class="o">-&gt;</span> <span class="n">map</span><span class="o">[</span><span class="n">row</span><span class="o">.</span><span class="na">getMetaData</span><span class="o">().</span><span class="na">getColumnName</span><span class="o">(</span><span class="n">col</span><span class="o">+</span><span class="mi">1</span><span class="o">)]</span> <span class="o">=</span> <span class="n">row</span><span class="o">[</span><span class="n">col</span><span class="o">]</span>
+</span><span class='line'>                        <span class="o">}</span>
+</span><span class='line'>                        <span class="s2">&quot;${table}&quot;</span> <span class="o">(</span><span class="n">map</span><span class="o">)</span>
+</span><span class='line'>                    <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">def</span> <span class="n">fos</span> <span class="o">=</span> <span class="k">new</span> <span class="n">File</span><span class="o">(</span><span class="s1">&#39;dbunit_test.xml&#39;</span><span class="o">).</span><span class="na">withWriter</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="n">it</span><span class="o">.</span><span class="na">write</span><span class="o">(</span><span class="n">buffer</span><span class="o">.</span><span class="na">toString</span><span class="o">())</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>For each query the map &#8216;queries&#8217; define, MarkupBuilder will generate the FlatXmlDataSet format entries for the returned tuples.
+There we go your test data file!</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[State of WSRP Development: OpenPortal verus Apache wsrp4j]]></title>
+    <link href="http://dmly.github.com/blog/2009/01/14/state-of-wsrp-development-openportal-verus-apache-wsrp4j/"/>
+    <updated>2009-01-14T20:27:00-08:00</updated>
+    <id>http://dmly.github.com/blog/2009/01/14/state-of-wsrp-development-openportal-verus-apache-wsrp4j</id>
+    <content type="html"><![CDATA[<p>with wsrp4j project has become more and more dormant, I am seeking for another wsrp framework.
+To the best of my knowledge, beside the commercial framework out there from BEA Portal and IBM Websphere, Apache&#8217;s wsrp4j used to be the
+only open source solution until Sun steps in and sponsors java.net&#8217;s OpenPortal.
+ My intention is to only replace the wsrp producer, but it is not a trivial task to just simply swap one producer and use it with the existing portlet container implementation.
+So go with OpenPortal container and its wsrp I am right now.</p>
+
+<!-- more -->
+
+
+<p>So far, my feeling with OpenPortal implementation is nothing but impressed. I&#8217;m impressed from
+how easy it is to setup the container/producer in Tomcat, the ease of portlet deployment to the active support of OpenPortal&#8217;s community.
+Of course, I encounter a few glitches here and there but they all could be overcome within a matter of hours by looking at the code or requesting support of the community.</p>
+
+<p>What about performance, how does OpenPortal perform compare to Apache portal suite.
+I gear up and setup the two framework to go head to head for a benchmark test.</p>
+
+<p>What I use:</p>
+
+<table width="100%" cellspacing="1" cellpadding="1" border="1" align="center">
+    <tbody>
+        <tr>
+            <td align="center"><strong>OpenPortal</strong></td>
+            <td align="center"><strong>Apache Portal</strong></td>
+        </tr>
+        <tr>
+            <td>OpenPortal portlet container milestone 4 (July 2008) <br />
+            OpenPortal wsrp implementation milestone 4 (July 2008)</td>
+            <td>Apache Portlet Container Pluto 1.0.1 Release (some time 2006??) <br />
+            Apache wsrp4j Revision 327501 on August 28 2005 (they have not a stable release yet)</td>
+        </tr>
+        <tr>
+            <td>Web Services stack: JAX-WS Sun&#8217;s implementation</td>
+            <td>Web Services stack: Apache Axis 1.3</td>
+        </tr>
+    </tbody>
+</table>
+
+
+<p>All run from JDK 1.6 and tomcat 6 servlet.</p>
+
+<p>How do I conduct the test:
+-  In the consumer side I setup a servlet filter to capture the time to complete a request: this can be used to benchmark the web services stacks.
+-  in the producer side I also setup a filter to capture the time the producer take to process the request: this can be used to benchmark the portlet containers.
+I&#8217;m making one assumption here: producers&#8217; performance difference from both implementations can be ignored since it delegates most of its work to the portlet
+container.</p>
+
+<ul>
+<li>I create a simple portlet JSP generating a huge content: table with 500 rows full of text, roughly 3 MB in its final rendered HTML.</li>
+<li>Make 10 requests and take the average: discard the result of the very first request due to overhead of initialization of the wsrp engine from both framework
+I notice that OpenPortal takes less time to initialize. When both engines are ready, their performance are pretty identical:</li>
+</ul>
+
+
+<table width="100%" cellspacing="1" cellpadding="1" border="1">
+    <tbody>
+        <tr>
+            <td align="center"><strong>Benchmark Item</strong></td>
+            <td align="center"><strong>OpenPortal Consumer</strong></td>
+            <td align="center"><strong>Apache wsrp4j Consumer</strong></td>
+            <td align="center"><strong>OpenPortal Producer </strong></td>
+            <td align="center"><strong>Apache wsrp4j Producer</strong></td>
+        </tr>
+        <tr>
+            <td># of Requests</td>
+            <td>10</td>
+            <td>10</td>
+            <td>10</td>
+            <td>10</td>
+        </tr>
+        <tr>
+            <td>Min Time (ms)</td>
+            <td>1406</td>
+            <td>1641</td>
+            <td>438</td>
+            <td>468</td>
+        </tr>
+        <tr>
+            <td>Avg Time (ms)</td>
+            <td>1807.8</td>
+            <td>1736.3</td>
+            <td>611.2</td>
+            <td>666.9</td>
+        </tr>
+        <tr>
+            <td>Max Time (ms)</td>
+            <td>1985</td>
+            <td>2032</td>
+            <td>1047</td>
+            <td>859</td>
+        </tr>
+    </tbody>
+</table>
+
+
+<p><em>Conclusion</em>
+If we continue to choose open source solution for our portal, OpenPortal would be the best choice at this moment.
+wsrp4j has not had any activity recently (3 years). Its community support is weak. The code is unstable: latest unstable release (0.5) won&#8217;t even compatible with any Pluto container.
+While Apache pluto/jetspeed container already supports portlet spec 2.0 wsrp4j is still clinging at spec 1.0</p>
+
+<p>from the last couple of weeks working with OpenPortal I feel the support is pretty strong. Whenever I report a bug, a response always follows the next day. Sometimes
+it comes with patches as well. OpenPortal will not work out of the box at this moment with our existing consumer but it would not take much time or effort to fix it.
+best of all, OpenPortal comes with the support of portlet 2.0 spec and wsrp version 2 spec!</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Autonomous Game Agent]]></title>
+    <link href="http://dmly.github.com/blog/2008/10/23/autonomous-game-agent/"/>
+    <updated>2008-10-23T18:57:00-07:00</updated>
+    <id>http://dmly.github.com/blog/2008/10/23/autonomous-game-agent</id>
+    <content type="html"><![CDATA[<p>I am always interested in game AI programming, specially autonomous game agents which move around and act on their own will but based on a set of pre-defined rules of course.
+After reading the first chapter of <a href="http://www.amazon.com/Programming-Game-Example-Mat-Buckland/dp/1556220782/ref=sr_1_5?ie=UTF8&amp;s=books&amp;qid=1224810375&amp;sr=8-5">Programming Game AI by Example</a> by Matt Buckland, I can understand the magic behind those intelligent behaviors. I am very impressed to know how simple it is  to create those behaviors. But it&#8217;s definitely not simple if one is not familiar with trigonometry and geometric algebra.</p>
+
+<p>The code presented in this book is all C++. And I have a hard time to make those code built in Visual C++ 2008. It is guaranteed to work with Visual C++ 2005 only!
+So I rolled up my sleeves and wrote my own code in Java. And I think this is the best way to test how much I understand the book.</p>
+
+<!-- more -->
+
+
+<p>So far, I have finished coding the following behaviors: arrive, seek, avoid, wandering and obstacle avoidance.</p>
+
+<p>I put those behaviors in a single applet illustrated here. It&#8217;s just a bunch of flies flying around trying to avoid their predator, a spider may be!</p>
+
+<object classid="clsid:8AD9C840-044E-11D1-B3E9-00805F499D93" codebase="http://java.sun.com/update/1.4.2/jinstall-1_4_2_12-windows-i586.cab" width="500" height="500" standby="Loading Processing software..."  >    
+<param name="code" value="com.lyfam.game.agent.WanderingAvoidance" />
+<param name="archive" value="http://autonomous-game-agent.googlecode.com/svn/trunk/SteeringBehavior/wandering.jar" />
+
+<param name="mayscript" value="true" />
+<param name="scriptable" value="true" />
+    
+<param name="image" value="loading.gif" />
+
+<param name="boxmessage" value="Loading Processing software..." />
+<param name="boxbgcolor" value="#000000" />
+                    
+<param name="test_string" value="inner" />
+                
+<p>
+<strong>
+This browser does not have a Java Plug-in.
+<br />
+<a href="http://java.sun.com/products/plugin/downloads/index.html" title="Download Java Plug-in">
+Get the latest Java Plug-in here.
+</a>
+
+</strong>
+</p>
+
+</object>
+
+
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Cairngorm and Flash Event]]></title>
+    <link href="http://dmly.github.com/blog/2008/07/28/cairngorm-and-flash-event/"/>
+    <updated>2008-07-28T18:46:00-07:00</updated>
+    <id>http://dmly.github.com/blog/2008/07/28/cairngorm-and-flash-event</id>
+    <content type="html"><![CDATA[<p>For my Flex project at work, I use Cairgorm as the MVC framework. Not that I like Cairgorn a lot but at the time our project starts it seems to be the de-facto framework for mid-to-big-mess Flex applications. Adobe also stands behind Cairgorm in supporting and consulting it.</p>
+
+<p>The learning curve is not so steep. I pick up the tutorial material available at Adobe website, specially the animated diagram is very helpful and learn to use the framework in less than a day. The second day I already begin to integrate it into our application.</p>
+
+<p>One thing annoys me most about this framework is that there is no way (sort of) for the UI to get notified when a remote call is done getting data and the result is available. I end up use some hack to get around it. For example, use a ChangeWatcher to monitor the model. When the result ready, the command object updates the model, just triggers the ChangeWatcher&#8217;s propertyChange event.</p>
+
+<!-- more -->
+
+
+<p>This is kind of messy and the more I use ChangeWatcher, the more I tend to stay away from it if I could. Until I find a solution&#8230;</p>
+
+<p>Remember the event class you must extend from the CairngormEvent (not Flash event)?</p>
+
+<p>You just need to include a function object (yes, a functor) from the UI component you want Cairgorm to notify when the result is ready to the cairgorm event object before dispatching it. The in your command class, when the result come back, just invoke that function object.</p>
+
+<p> Sound complicated? Not so, here it is in code</p>
+
+<p>In your event class:</p>
+
+<figure class='code'><figcaption><span>Event Class</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='actionscript'><span class='line'><span class="kd">class</span> <span class="nx">SampleEvent</span> <span class="kd">extends</span> <span class="nx">CairngormEvent</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="k">var</span> <span class="nx">someStuff</span><span class="o">:</span><span class="nb">Object</span><span class="o">;</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="k">var</span> <span class="nx">callbackFunctionObj</span><span class="o">:</span><span class="nb">Function</span><span class="o">;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>In your Command class</p>
+
+<figure class='code'><figcaption><span>Command Class</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class='actionscript'><span class='line'><span class="kd">class</span> <span class="nx">SampleCommand</span> <span class="kd">implements</span> <span class="nx">Command</span><span class="o">,</span> <span class="nb">Responder</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="kd">private</span> <span class="k">var</span> <span class="nx">callbackFunction</span><span class="o">:</span><span class="nb">Function</span><span class="o">;</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="nx">void</span> <span class="nx">execute</span><span class="p">(</span><span class="nx">event</span><span class="o">:</span><span class="nx">CairgormEvent</span><span class="p">)</span><span class="o">:</span><span class="nx">void</span>
+</span><span class='line'>  <span class="p">{</span>
+</span><span class='line'>      <span class="nx">callbackFunction</span> <span class="o">=</span> <span class="nx">event</span><span class="p">.</span><span class="nx">callbackFunction</span><span class="o">;</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="kd">public</span> <span class="nx">void</span> <span class="nx">result</span><span class="p">(</span><span class="nx">event</span><span class="o">:</span><span class="nb">Event</span><span class="p">)</span><span class="o">:</span><span class="nx">void</span>
+</span><span class='line'>  <span class="p">{</span>
+</span><span class='line'>     <span class="c1">// setting your model with the result</span>
+</span><span class='line'>      <span class="p">....</span>
+</span><span class='line'>     <span class="nx">callbackFunction</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="kc">null</span><span class="p">);</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span>In The UI</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='actionscript'><span class='line'><span class="o">&lt;</span><span class="nx">script</span><span class="o">&gt;</span>
+</span><span class='line'>    <span class="k">var</span> <span class="nx">event</span><span class="o">:</span><span class="nx">SampleEvent</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">SampleEvent</span><span class="o">;</span>
+</span><span class='line'>    <span class="nx">event</span><span class="p">.</span><span class="nx">someStuff</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Stuff</span><span class="p">()</span>
+</span><span class='line'>    <span class="nx">event</span><span class="p">.</span><span class="nx">callbackFunctionObj</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">notfyMeWhenDataReady</span><span class="o">;</span>
+</span><span class='line'>   <span class="nx">event</span><span class="p">.</span><span class="nx">dispatch</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="nx">void</span> <span class="nx">notfyMeWhenDataReady</span><span class="p">()</span><span class="o">:</span><span class="nx">void</span>
+</span><span class='line'>    <span class="p">{</span>
+</span><span class='line'>       <span class="c1">// do whatever you want when the data is ready here</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="nx">script</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>When the result is ready, the command object will invoke the callback function. Thus in the above example notfyMeWhenDataReady will be called!</p>
+]]></content>
+  </entry>
+  
+>>>>>>> bb1f29564b951cfd86859b039605510742441d76
 </feed>
