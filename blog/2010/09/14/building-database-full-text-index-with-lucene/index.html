@@ -1,0 +1,438 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Building Database Full Text Index with Lucene - Ghost in the JVM</title>
+  <meta name="author" content="Doug Ly">
+
+  
+  <meta name="description" content="I have this client table in Oracle having more than 3 million rows. One of the column is the client name in which our users want to have full text &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://dmly.github.com/blog/2010/09/14/building-database-full-text-index-with-lucene/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="Ghost in the JVM" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Ghost in the JVM</a></h1>
+  
+    <h2>An adventure in the JVM land</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:dmly.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Building Database Full Text Index With Lucene</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2010-09-14T14:15:00-04:00" pubdate data-updated="true">Sep 14<span>th</span>, 2010</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>I have this client table in Oracle having more than 3 million rows. One of the column is the client name in which our users want to have full text search support.
+Originally, Oracle context search feature was choosen by a group of consultants. May be we were maintaining the domain index correctly but its performance sucks.</p>
+
+<!-- more -->
+
+
+<p>I spend most of my time troubleshooting this issue and found out that we need to run &#8220;optimize&#8221; to make the index perform well. But anyway I am tired of having to hear users&#8217; complaints
+everyday so I got rid of Oracle full text search and refactor the search service to use Apache Lucene.</p>
+
+<p>Here is how is done:</p>
+
+<ol>
+<li>Connect to the client table and get the rows need to be indexed. Of course I did this in batch of 20K rows each.
+You could gain significant performance of this data loading using a database connection pool and pulling data in parallel.</li>
+<li>Use Lucene to index the client name and store the client IDs for DB retrieval later on</li>
+</ol>
+
+
+<figure class='code'><figcaption><span>Extracting Data for Indexing</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+<span class='line-number'>77</span>
+<span class='line-number'>78</span>
+<span class='line-number'>79</span>
+<span class='line-number'>80</span>
+<span class='line-number'>81</span>
+<span class='line-number'>82</span>
+<span class='line-number'>83</span>
+<span class='line-number'>84</span>
+<span class='line-number'>85</span>
+<span class='line-number'>86</span>
+<span class='line-number'>87</span>
+<span class='line-number'>88</span>
+<span class='line-number'>89</span>
+</pre></td><td class='code'><pre><code class='groovy'><span class='line'><span class="kn">import</span> <span class="nn">org.apache.lucene.index.IndexWriter</span><span class="o">;</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">org.apache.lucene.document.Document</span><span class="o">;</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">org.apache.lucene.document.Field</span><span class="o">;</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">org.apache.lucene.analysis.standard.StandardAnalyzer</span><span class="o">;</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">groovy.sql.Sql</span><span class="o">;</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">com.mchange.v2.c3p0.ComboPooledDataSource</span><span class="o">;</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">java.util.concurrent.*</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">ComboPooledDataSource</span> <span class="n">ds</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ComboPooledDataSource</span><span class="o">()</span>
+</span><span class='line'><span class="n">ds</span><span class="o">.</span><span class="na">driverClass</span> <span class="o">=</span> <span class="s1">&#39;oracle.jdbc.driver.OracleDriver&#39;</span>
+</span><span class='line'><span class="n">ds</span><span class="o">.</span><span class="na">jdbcUrl</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+</span><span class='line'><span class="n">ds</span><span class="o">.</span><span class="na">user</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+</span><span class='line'><span class="n">ds</span><span class="o">.</span><span class="na">password</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+</span><span class='line'><span class="n">ds</span><span class="o">.</span><span class="na">minPoolSize</span> <span class="o">=</span> <span class="mi">2</span>
+</span><span class='line'><span class="n">ds</span><span class="o">.</span><span class="na">maxPoolSize</span> <span class="o">=</span> <span class="mi">4</span>
+</span><span class='line'><span class="n">ds</span><span class="o">.</span><span class="na">acquireIncrement</span> <span class="o">=</span> <span class="mi">1</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">def</span> <span class="n">stepCount</span> <span class="o">=</span> <span class="mi">20000</span>
+</span><span class='line'><span class="n">BlockingQueue</span> <span class="n">queue</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayBlockingQueue</span><span class="o">(</span><span class="mi">8</span><span class="o">);</span>
+</span><span class='line'><span class="kt">def</span> <span class="n">pool</span> <span class="o">=</span> <span class="n">Executors</span><span class="o">.</span><span class="na">newFixedThreadPool</span><span class="o">(</span><span class="mi">3</span><span class="o">);</span>
+</span><span class='line'><span class="kt">def</span> <span class="n">ecs</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ExecutorCompletionService</span><span class="o">(</span><span class="n">pool</span><span class="o">);</span>
+</span><span class='line'><span class="kt">def</span> <span class="n">submit</span> <span class="o">=</span> <span class="o">{</span> <span class="n">c</span> <span class="o">-&gt;</span> <span class="n">ecs</span><span class="o">.</span><span class="na">submit</span><span class="o">(</span><span class="n">c</span> <span class="k">as</span> <span class="n">Callable</span><span class="o">)</span> <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">def</span> <span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+</span><span class='line'><span class="s2">select</span>
+</span><span class='line'><span class="s2">id, name</span>
+</span><span class='line'><span class="s2">from</span>
+</span><span class='line'><span class="s2">(</span>
+</span><span class='line'><span class="s2">select /*+ FIRST_ROW(${stepCount}) */</span>
+</span><span class='line'><span class="s2">id, name, rownum rnum</span>
+</span><span class='line'><span class="s2">from</span>
+</span><span class='line'><span class="s2">atlas_client</span>
+</span><span class='line'><span class="s2">where</span>
+</span><span class='line'><span class="s2">id &gt; 0</span>
+</span><span class='line'><span class="s2">and rownum &lt;= ?</span>
+</span><span class='line'><span class="s2">order by</span>
+</span><span class='line'><span class="s2">id asc</span>
+</span><span class='line'><span class="s2">)</span>
+</span><span class='line'><span class="s2">where</span>
+</span><span class='line'><span class="s2">rnum &gt; ?</span>
+</span><span class='line'><span class="s2">&quot;&quot;&quot;</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">def</span> <span class="n">maxCount</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Sql</span><span class="o">(</span><span class="n">ds</span><span class="o">).</span><span class="na">firstRow</span><span class="o">(</span><span class="s1">&#39;select count(1) as maxCount from atlas_client where id &gt; 0&#39;&#39;).maxCount;</span>
+</span><span class='line'><span class="s1">println &quot;Max count: ${maxCount}&quot;</span>
+</span><span class='line'><span class="s1">def range = (0..maxCount).step(stepCount)</span>
+</span><span class='line'><span class="s1">if (range[-1] &lt; maxCount) range &lt;&lt; maxCount</span>
+</span><span class='line'>
+</span><span class='line'><span class="s1">def indexDir = new File(&#39;</span><span class="n">atlas_client_index</span><span class="err">&#39;</span><span class="o">);</span>
+</span><span class='line'><span class="n">IndexWriter</span> <span class="n">writer</span> <span class="o">=</span> <span class="k">new</span> <span class="n">IndexWriter</span><span class="o">(</span><span class="n">indexDir</span><span class="o">,</span> <span class="k">new</span> <span class="n">StandardAnalyzer</span><span class="o">(),</span> <span class="kc">true</span><span class="o">);</span>
+</span><span class='line'><span class="n">writer</span><span class="o">.</span><span class="na">setUseCompoundFile</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">def</span> <span class="n">query</span> <span class="o">=</span> <span class="o">{</span><span class="n">low</span><span class="o">,</span> <span class="n">hi</span> <span class="o">-&gt;</span>
+</span><span class='line'>  <span class="n">println</span> <span class="s2">&quot;Querying from ${low} to ${hi}&quot;</span>
+</span><span class='line'>  <span class="kt">def</span> <span class="n">rows</span> <span class="o">=</span> <span class="o">[]</span>
+</span><span class='line'>  <span class="k">new</span> <span class="nf">Sql</span><span class="o">(</span><span class="n">ds</span><span class="o">).</span><span class="na">eachRow</span><span class="o">(</span><span class="n">sql</span><span class="o">,</span> <span class="o">[</span><span class="n">hi</span><span class="o">,</span> <span class="n">low</span><span class="o">])</span> <span class="o">{</span>
+</span><span class='line'>    <span class="n">row</span> <span class="o">-&gt;</span> <span class="n">rows</span> <span class="o">&lt;&lt;</span> <span class="n">row</span><span class="o">.</span><span class="na">toRowResult</span><span class="o">()</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>  <span class="n">println</span> <span class="s2">&quot;Finishing query. Return ${rows.size()} rows from ${low} to ${hi}&quot;</span>
+</span><span class='line'>  <span class="k">return</span> <span class="n">rows</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">def</span> <span class="n">createIndex</span> <span class="o">=</span> <span class="o">{</span><span class="n">array</span> <span class="o">-&gt;</span>
+</span><span class='line'>  <span class="n">array</span><span class="o">.</span><span class="na">each</span> <span class="o">{</span>
+</span><span class='line'>    <span class="n">Document</span> <span class="n">doc</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Document</span><span class="o">();</span>
+</span><span class='line'>    <span class="n">doc</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">Field</span><span class="o">(</span><span class="s2">&quot;id&quot;</span><span class="o">,</span> <span class="n">it</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">toString</span><span class="o">(),</span> <span class="n">Field</span><span class="o">.</span><span class="na">Store</span><span class="o">.</span><span class="na">YES</span><span class="o">,</span> <span class="n">Field</span><span class="o">.</span><span class="na">Index</span><span class="o">.</span><span class="na">NO</span><span class="o">));</span>
+</span><span class='line'>    <span class="n">doc</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">Field</span><span class="o">(</span><span class="s2">&quot;name&quot;</span><span class="o">,</span> <span class="n">it</span><span class="o">.</span><span class="na">name</span><span class="o">,</span> <span class="n">Field</span><span class="o">.</span><span class="na">Store</span><span class="o">.</span><span class="na">YES</span><span class="o">,</span> <span class="n">Field</span><span class="o">.</span><span class="na">Index</span><span class="o">.</span><span class="na">ANALYZED</span><span class="o">));</span>
+</span><span class='line'>    <span class="n">writer</span><span class="o">.</span><span class="na">addDocument</span><span class="o">(</span><span class="n">doc</span><span class="o">);</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">range</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>  <span class="n">println</span> <span class="s2">&quot;Submitting query for clients record from ${range[i]} to ${range[i+1]}&quot;</span>
+</span><span class='line'>  <span class="kt">def</span> <span class="n">low</span> <span class="o">=</span> <span class="n">range</span><span class="o">[</span><span class="n">i</span><span class="o">]</span>
+</span><span class='line'>  <span class="kt">def</span> <span class="n">hi</span> <span class="o">=</span> <span class="n">range</span><span class="o">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="o">]</span>
+</span><span class='line'>  <span class="n">submit</span> <span class="o">{</span> <span class="n">query</span><span class="o">(</span><span class="n">low</span><span class="o">,</span> <span class="n">hi</span><span class="o">)</span> <span class="o">};</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">range</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>  <span class="kt">def</span> <span class="n">results</span> <span class="o">=</span> <span class="n">ecs</span><span class="o">.</span><span class="na">take</span><span class="o">().</span><span class="na">get</span><span class="o">();</span>
+</span><span class='line'>  <span class="n">println</span> <span class="s2">&quot;Results (${results.size()}) ready for clients record query, indexing...&quot;</span>
+</span><span class='line'>  <span class="n">createIndex</span><span class="o">(</span><span class="n">results</span><span class="o">);</span>
+</span><span class='line'>  <span class="n">println</span> <span class="s2">&quot;Indexing done.&quot;</span>
+</span><span class='line'>  <span class="n">writer</span><span class="o">.</span><span class="na">commit</span><span class="o">();</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">writer</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+</span><span class='line'><span class="n">pool</span><span class="o">.</span><span class="na">shutdown</span><span class="o">();</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Doug Ly</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2010-09-14T14:15:00-04:00" pubdate data-updated="true">Sep 14<span>th</span>, 2010</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/programming/'>programming</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://dmly.github.com/blog/2010/09/14/building-database-full-text-index-with-lucene/" data-via="" data-counturl="http://dmly.github.com/blog/2010/09/14/building-database-full-text-index-with-lucene/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2010/08/27/asynchronous-calls-in-c-number/" title="Previous Post: Asynchronous Calls in C#">&laquo; Asynchronous Calls in C#</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2010/09/14/building-database-full-text-index-with-lucene/">Building Database Full Text Index with Lucene</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2010/08/27/asynchronous-calls-in-c-number/">Asynchronous Calls in C#</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2009/07/15/concurrent-amf-request-for-blazeds/">Concurrent AMF Request for BlazeDS</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2009/07/02/query-templating-for-hibernate-native-query/">Query Templating for Hibernate Native Query</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2009/03/15/ria-portlet-made-possible-with-flex-remoting/">RIA Portlet Made Possible With Flex Remoting</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Doug Ly -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'jvmisking';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://dmly.github.com/blog/2010/09/14/building-database-full-text-index-with-lucene/';
+        var disqus_url = 'http://dmly.github.com/blog/2010/09/14/building-database-full-text-index-with-lucene/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

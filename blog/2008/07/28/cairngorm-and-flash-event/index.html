@@ -1,0 +1,335 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Cairngorm and Flash Event - Ghost in the JVM</title>
+  <meta name="author" content="Doug Ly">
+
+  
+  <meta name="description" content="For my Flex project at work, I use Cairgorm as the MVC framework. Not that I like Cairgorn a lot but at the time our project starts it seems to be &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://dmly.github.com/blog/2008/07/28/cairngorm-and-flash-event/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="Ghost in the JVM" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Ghost in the JVM</a></h1>
+  
+    <h2>An adventure in the JVM land</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:dmly.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Cairngorm and Flash Event</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-07-28T18:46:00-04:00" pubdate data-updated="true">Jul 28<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>For my Flex project at work, I use Cairgorm as the MVC framework. Not that I like Cairgorn a lot but at the time our project starts it seems to be the de-facto framework for mid-to-big-mess Flex applications. Adobe also stands behind Cairgorm in supporting and consulting it.</p>
+
+<p>The learning curve is not so steep. I pick up the tutorial material available at Adobe website, specially the animated diagram is very helpful and learn to use the framework in less than a day. The second day I already begin to integrate it into our application.</p>
+
+<p>One thing annoys me most about this framework is that there is no way (sort of) for the UI to get notified when a remote call is done getting data and the result is available. I end up use some hack to get around it. For example, use a ChangeWatcher to monitor the model. When the result ready, the command object updates the model, just triggers the ChangeWatcher&#8217;s propertyChange event.</p>
+
+<!-- more -->
+
+
+<p>This is kind of messy and the more I use ChangeWatcher, the more I tend to stay away from it if I could. Until I find a solution&#8230;</p>
+
+<p>Remember the event class you must extend from the CairngormEvent (not Flash event)?</p>
+
+<p>You just need to include a function object (yes, a functor) from the UI component you want Cairgorm to notify when the result is ready to the cairgorm event object before dispatching it. The in your command class, when the result come back, just invoke that function object.</p>
+
+<p> Sound complicated? Not so, here it is in code</p>
+
+<p>In your event class:</p>
+
+<figure class='code'><figcaption><span>Event Class</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='actionscript'><span class='line'><span class="kd">class</span> <span class="nx">SampleEvent</span> <span class="kd">extends</span> <span class="nx">CairngormEvent</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="k">var</span> <span class="nx">someStuff</span><span class="o">:</span><span class="nb">Object</span><span class="o">;</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="k">var</span> <span class="nx">callbackFunctionObj</span><span class="o">:</span><span class="nb">Function</span><span class="o">;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>In your Command class</p>
+
+<figure class='code'><figcaption><span>Command Class</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class='actionscript'><span class='line'><span class="kd">class</span> <span class="nx">SampleCommand</span> <span class="kd">implements</span> <span class="nx">Command</span><span class="o">,</span> <span class="nb">Responder</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="kd">private</span> <span class="k">var</span> <span class="nx">callbackFunction</span><span class="o">:</span><span class="nb">Function</span><span class="o">;</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="nx">void</span> <span class="nx">execute</span><span class="p">(</span><span class="nx">event</span><span class="o">:</span><span class="nx">CairgormEvent</span><span class="p">)</span><span class="o">:</span><span class="nx">void</span>
+</span><span class='line'>  <span class="p">{</span>
+</span><span class='line'>      <span class="nx">callbackFunction</span> <span class="o">=</span> <span class="nx">event</span><span class="p">.</span><span class="nx">callbackFunction</span><span class="o">;</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="kd">public</span> <span class="nx">void</span> <span class="nx">result</span><span class="p">(</span><span class="nx">event</span><span class="o">:</span><span class="nb">Event</span><span class="p">)</span><span class="o">:</span><span class="nx">void</span>
+</span><span class='line'>  <span class="p">{</span>
+</span><span class='line'>     <span class="c1">// setting your model with the result</span>
+</span><span class='line'>      <span class="p">....</span>
+</span><span class='line'>     <span class="nx">callbackFunction</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="kc">null</span><span class="p">);</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span>In The UI</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='actionscript'><span class='line'><span class="o">&lt;</span><span class="nx">script</span><span class="o">&gt;</span>
+</span><span class='line'>    <span class="k">var</span> <span class="nx">event</span><span class="o">:</span><span class="nx">SampleEvent</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">SampleEvent</span><span class="o">;</span>
+</span><span class='line'>    <span class="nx">event</span><span class="p">.</span><span class="nx">someStuff</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Stuff</span><span class="p">()</span>
+</span><span class='line'>    <span class="nx">event</span><span class="p">.</span><span class="nx">callbackFunctionObj</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">notfyMeWhenDataReady</span><span class="o">;</span>
+</span><span class='line'>   <span class="nx">event</span><span class="p">.</span><span class="nx">dispatch</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="nx">void</span> <span class="nx">notfyMeWhenDataReady</span><span class="p">()</span><span class="o">:</span><span class="nx">void</span>
+</span><span class='line'>    <span class="p">{</span>
+</span><span class='line'>       <span class="c1">// do whatever you want when the data is ready here</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="nx">script</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>When the result is ready, the command object will invoke the callback function. Thus in the above example notfyMeWhenDataReady will be called!</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Doug Ly</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-07-28T18:46:00-04:00" pubdate data-updated="true">Jul 28<span>th</span>, 2008</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/programming/'>programming</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://dmly.github.com/blog/2008/07/28/cairngorm-and-flash-event/" data-via="" data-counturl="http://dmly.github.com/blog/2008/07/28/cairngorm-and-flash-event/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+      
+        <a class="basic-alignment right" href="/blog/2008/10/23/autonomous-game-agent/" title="Next Post: Autonomous Game Agent">Autonomous Game Agent &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2010/09/14/building-database-full-text-index-with-lucene/">Building Database Full Text Index with Lucene</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2010/08/27/asynchronous-calls-in-c-number/">Asynchronous Calls in C#</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2009/07/15/concurrent-amf-request-for-blazeds/">Concurrent AMF Request for BlazeDS</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2009/07/02/query-templating-for-hibernate-native-query/">Query Templating for Hibernate Native Query</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2009/03/15/ria-portlet-made-possible-with-flex-remoting/">RIA Portlet Made Possible With Flex Remoting</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Doug Ly -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'jvmisking';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://dmly.github.com/blog/2008/07/28/cairngorm-and-flash-event/';
+        var disqus_url = 'http://dmly.github.com/blog/2008/07/28/cairngorm-and-flash-event/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>
