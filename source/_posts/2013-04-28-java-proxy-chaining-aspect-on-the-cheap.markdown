@@ -82,7 +82,7 @@ And the Retry aspect with maximum of 3 retries before giving up:
 
 In order to facilitate the annotations in the java dynamic proxy, we need to create an InvocationHandler for each of those annotations.
 For this I first borrow the utility class from "Java Reflection in Action". You can get full source at the end of this post.
-I then create a base Interceptor on top of this invocation handler to make the dynamic proxy generation handling annoations easier.
+I then create a base Interceptor on top of this invocation handler to make the dynamic proxy generation handling annotations easier.
 
 ``` java AbstractInvocationHandler and The base Invoker
 public abstract class AbstractInvocationHandler<T> implements InvocationHandler
@@ -174,7 +174,7 @@ public class TimerAspect implements Invoker<Timeit>
 }
 ```
 
-Here is why this is an aspect: the execute method takes note of the current time. It then invokes the original method call. Finally it calculate
+Here is why this is an aspect: the execute method takes note of the current time. It then invokes the original method call. Finally it calculates
 how long this method call takes. I believe in AspectJ this is called "before and around pointcut".
 
 Similarly, I would create the Retry aspect by implementing the Invoker interface and call
@@ -187,7 +187,7 @@ After we have the aspects to handle those annotations, how do chain them in a co
 It all depends on your aspects' logic but in this case I would make the Timer aspect outside of the Retry aspect. Confused? Here is the order of execution:
 
     1.  Enter the Timer aspect, take note of the current time
-    2.  Enter the Rety aspect, retry count set to 0
+    2.  Enter the Retry aspect, retry count set to 0
     3.  Invoke the actual Dao method
     4.  If it fails, retry aspect catch the exception and retries! It keeps track of the number of retries (up to 3 times by default)
     5.  Either the call fails if retries exceed 3 times or it exits the Retry aspect and yield the command to Timer Aspect again
