@@ -109,6 +109,27 @@ with bytecode weaving. Instead, I will talk about a lighter weight of aspect pro
 AOP works. The only difference is that my code will assume every method calls implement interfaces. Thus, it will not have to use cglib to generate the proxies. Also, I think programming to interface
 is a much cleaner and prefer way for your service calls Data access objects (DAO).</p>
 
+<p>At the end you could decorate your method with annotations/aspects like this:</p>
+
+<figure class='code'><figcaption><span>Example</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="nd">@Timeit</span>
+</span><span class='line'><span class="nd">@Retry</span><span class="o">(</span><span class="n">times</span><span class="o">=</span><span class="mi">3</span><span class="o">)</span>
+</span><span class='line'><span class="nd">@Cache</span><span class="o">(</span><span class="n">timeToLiveInSeconds</span><span class="o">=</span><span class="mi">3600</span><span class="o">)</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">goGetMyData</span><span class="o">(</span><span class="n">String</span> <span class="n">someParam</span><span class="o">,</span> <span class="kt">int</span> <span class="n">anotherOne</span><span class="o">)</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>    <span class="c1">// do something</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
 </div>
   
   

@@ -4,7 +4,7 @@
   <title><![CDATA[Category: programming java | Ghost in the JVM]]></title>
   <link href="http://dmly.github.com/blog/categories/programming-java/atom.xml" rel="self"/>
   <link href="http://dmly.github.com/"/>
-  <updated>2013-04-30T00:23:22-04:00</updated>
+  <updated>2013-04-30T15:45:50-04:00</updated>
   <id>http://dmly.github.com/</id>
   <author>
     <name><![CDATA[Doug Ly]]></name>
@@ -31,6 +31,21 @@ Normally, you should at least retry the calls for several times before giving up
 with bytecode weaving. Instead, I will talk about a lighter weight of aspect programming using the Java's dynamic proxy and its reflection mechanism. I think it's pretty similar to the way Spring
 AOP works. The only difference is that my code will assume every method calls implement interfaces. Thus, it will not have to use cglib to generate the proxies. Also, I think programming to interface
 is a much cleaner and prefer way for your service calls Data access objects (DAO).</p>
+
+<p>At the end you could decorate your method with annotations/aspects like this:</p>
+
+<p>``` java Example
+@Timeit
+@Retry(times=3)
+@Cache(timeToLiveInSeconds=3600)
+public void goGetMyData(String someParam, int anotherOne)
+{</p>
+
+<pre><code>// do something
+</code></pre>
+
+<p>}
+```</p>
 
 <!-- more -->
 
