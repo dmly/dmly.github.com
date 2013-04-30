@@ -4,7 +4,7 @@
   <title><![CDATA[Category: programming java | Ghost in the JVM]]></title>
   <link href="http://dmly.github.com/blog/categories/programming-java/atom.xml" rel="self"/>
   <link href="http://dmly.github.com/"/>
-  <updated>2013-04-30T15:45:50-04:00</updated>
+  <updated>2013-04-30T19:24:43-04:00</updated>
   <id>http://dmly.github.com/</id>
   <author>
     <name><![CDATA[Doug Ly]]></name>
@@ -107,7 +107,7 @@ and retry if it fails (up to 3 times before I give up).</p>
 
 <p>In order to facilitate the annotations in the java dynamic proxy, we need to create an InvocationHandler for each of those annotations.
 For this I first borrow the utility class from "Java Reflection in Action". You can get full source at the end of this post.
-I then create a base Interceptor on top of this invocation handler to make the dynamic proxy generation handling annoations easier.</p>
+I then create a base Interceptor on top of this invocation handler to make the dynamic proxy generation handling annotations easier.</p>
 
 <p>``` java AbstractInvocationHandler and The base Invoker
 public abstract class AbstractInvocationHandler<T> implements InvocationHandler
@@ -213,7 +213,7 @@ public Object execute(Method method, Object[] args, Timeit ann,
 <p>}
 ```</p>
 
-<p>Here is why this is an aspect: the execute method takes note of the current time. It then invokes the original method call. Finally it calculate
+<p>Here is why this is an aspect: the execute method takes note of the current time. It then invokes the original method call. Finally it calculates
 how long this method call takes. I believe in AspectJ this is called "before and around pointcut".</p>
 
 <p>Similarly, I would create the Retry aspect by implementing the Invoker interface and call</p>
@@ -226,7 +226,7 @@ dao = Interceptor.createProxy(dao, Retry.class, new RetryAspect());
 It all depends on your aspects' logic but in this case I would make the Timer aspect outside of the Retry aspect. Confused? Here is the order of execution:</p>
 
 <pre><code>1.  Enter the Timer aspect, take note of the current time
-2.  Enter the Rety aspect, retry count set to 0
+2.  Enter the Retry aspect, retry count set to 0
 3.  Invoke the actual Dao method
 4.  If it fails, retry aspect catch the exception and retries! It keeps track of the number of retries (up to 3 times by default)
 5.  Either the call fails if retries exceed 3 times or it exits the Retry aspect and yield the command to Timer Aspect again
