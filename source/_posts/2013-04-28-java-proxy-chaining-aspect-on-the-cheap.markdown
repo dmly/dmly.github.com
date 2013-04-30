@@ -20,6 +20,18 @@ with bytecode weaving. Instead, I will talk about a lighter weight of aspect pro
 AOP works. The only difference is that my code will assume every method calls implement interfaces. Thus, it will not have to use cglib to generate the proxies. Also, I think programming to interface
 is a much cleaner and prefer way for your service calls Data access objects (DAO).
 
+At the end you could decorate your method with annotations/aspects like this:
+
+``` java Example
+@Timeit
+@Retry(times=3)
+@Cache(timeToLiveInSeconds=3600)
+public void goGetMyData(String someParam, int anotherOne)
+{
+    // do something
+}
+```
+
 <!-- more -->
 
 Let's define an example interface for the DAO and its implementation.
