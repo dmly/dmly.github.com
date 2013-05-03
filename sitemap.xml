@@ -1,71 +1,71 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>
     <url>
-        <loc>http://dmly.github.com/blog/2008/07/28/cairngorm-and-flash-event/</loc>
+        <loc>http://dmly.github.io/blog/2008/07/28/cairngorm-and-flash-event/</loc>
         <lastmod>2013-04-29T14:07:25-04:00</lastmod>
     </url>
     <url>
-        <loc>http://dmly.github.com/blog/2008/10/23/autonomous-game-agent/</loc>
+        <loc>http://dmly.github.io/blog/2008/10/23/autonomous-game-agent/</loc>
         <lastmod>2013-04-29T14:07:25-04:00</lastmod>
     </url>
     <url>
         <loc>
-            http://dmly.github.com/blog/2009/01/14/state-of-wsrp-development-openportal-verus-apache-wsrp4j/
+            http://dmly.github.io/blog/2009/01/14/state-of-wsrp-development-openportal-verus-apache-wsrp4j/
         </loc>
         <lastmod>2013-04-29T14:07:25-04:00</lastmod>
     </url>
     <url>
         <loc>
-            http://dmly.github.com/blog/2009/03/13/dbunit-flatxmldataset-export-using-groovy-builder/
+            http://dmly.github.io/blog/2009/03/13/dbunit-flatxmldataset-export-using-groovy-builder/
         </loc>
         <lastmod>2013-04-29T14:07:25-04:00</lastmod>
     </url>
     <url>
         <loc>
-            http://dmly.github.com/blog/2009/03/15/ria-portlet-made-possible-with-flex-remoting/
+            http://dmly.github.io/blog/2009/03/15/ria-portlet-made-possible-with-flex-remoting/
         </loc>
         <lastmod>2013-04-29T14:07:25-04:00</lastmod>
     </url>
     <url>
         <loc>
-            http://dmly.github.com/blog/2009/07/02/query-templating-for-hibernate-native-query/
+            http://dmly.github.io/blog/2009/07/02/query-templating-for-hibernate-native-query/
         </loc>
         <lastmod>2013-04-29T14:07:25-04:00</lastmod>
     </url>
     <url>
-        <loc>http://dmly.github.com/blog/2009/07/15/concurrent-amf-request-for-blazeds/</loc>
+        <loc>http://dmly.github.io/blog/2009/07/15/concurrent-amf-request-for-blazeds/</loc>
         <lastmod>2013-04-29T14:07:25-04:00</lastmod>
     </url>
     <url>
-        <loc>http://dmly.github.com/blog/2010/08/27/asynchronous-calls-in-c-number/</loc>
+        <loc>http://dmly.github.io/blog/2010/08/27/asynchronous-calls-in-c-number/</loc>
         <lastmod>2013-04-29T14:07:25-04:00</lastmod>
     </url>
     <url>
         <loc>
-            http://dmly.github.com/blog/2010/09/14/building-database-full-text-index-with-lucene/
+            http://dmly.github.io/blog/2010/09/14/building-database-full-text-index-with-lucene/
         </loc>
         <lastmod>2013-04-29T14:07:25-04:00</lastmod>
     </url>
     <url>
-        <loc>http://dmly.github.com/blog/2013/04/28/java-proxy-chaining-aspect-on-the-cheap/</loc>
+        <loc>http://dmly.github.io/blog/2013/04/28/java-proxy-chaining-aspect-on-the-cheap/</loc>
         <lastmod>2013-04-30T19:26:15-04:00</lastmod>
     </url>
     <url>
         <loc>
-            http://dmly.github.com/blog/2013/05/01/diy-java-app-server-on-openshift-so-far-so-good/
+            http://dmly.github.io/blog/2013/05/01/diy-java-app-server-on-openshift-so-far-so-good/
         </loc>
         <lastmod>2013-05-03T17:41:01-04:00</lastmod>
     </url>
     <url>
-        <loc>http://dmly.github.com/</loc>
+        <loc>http://dmly.github.io/</loc>
         <lastmod>2013-05-03T17:41:01-04:00</lastmod>
     </url>
     <url>
-        <loc>http://dmly.github.com/blog/archives/</loc>
+        <loc>http://dmly.github.io/blog/archives/</loc>
         <lastmod>2013-05-03T17:41:01-04:00</lastmod>
     </url>
     <url>
-        <loc>http://dmly.github.com/robots.txt</loc>
+        <loc>http://dmly.github.io/robots.txt</loc>
         <lastmod>2013-04-29T23:20:29-04:00</lastmod>
     </url>
 </urlset>

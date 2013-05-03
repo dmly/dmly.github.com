@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[Category: programming java | Ghost in the JVM]]></title>
-  <link href="http://dmly.github.com/blog/categories/programming-java/atom.xml" rel="self"/>
-  <link href="http://dmly.github.com/"/>
-  <updated>2013-05-03T18:30:32-04:00</updated>
-  <id>http://dmly.github.com/</id>
+  <link href="http://dmly.github.io/blog/categories/programming-java/atom.xml" rel="self"/>
+  <link href="http://dmly.github.io/"/>
+  <updated>2013-05-03T18:33:20-04:00</updated>
+  <id>http://dmly.github.io/</id>
   <author>
     <name><![CDATA[Doug Ly]]></name>
     
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[Java Proxy Chaining - Aspect on the Cheap]]></title>
-    <link href="http://dmly.github.com/blog/2013/04/28/java-proxy-chaining-aspect-on-the-cheap/"/>
+    <link href="http://dmly.github.io/blog/2013/04/28/java-proxy-chaining-aspect-on-the-cheap/"/>
     <updated>2013-04-28T21:01:00-04:00</updated>
-    <id>http://dmly.github.com/blog/2013/04/28/java-proxy-chaining-aspect-on-the-cheap</id>
+    <id>http://dmly.github.io/blog/2013/04/28/java-proxy-chaining-aspect-on-the-cheap</id>
     <content type="html"><![CDATA[<p>How many of you have written a caching solution for one of your expensive method calls? Or how about retry logic for your service calls?
 Living in such a connected world no single application is its own island. For every applications I have worked for, there always external dependencies, either other service APIs or
 databases that we need to rely upon. And we can't make the assumption that they are reliable 100% either.</p>

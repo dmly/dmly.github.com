@@ -1,4 +1,4 @@
 User-agent: *
 Disallow: 
 
-Sitemap: http://dmly.github.com/sitemap.xml 
+Sitemap: http://dmly.github.io/sitemap.xml 

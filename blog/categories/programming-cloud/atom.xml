@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[Category: programming cloud | Ghost in the JVM]]></title>
-  <link href="http://dmly.github.com/blog/categories/programming-cloud/atom.xml" rel="self"/>
-  <link href="http://dmly.github.com/"/>
-  <updated>2013-05-03T18:30:32-04:00</updated>
-  <id>http://dmly.github.com/</id>
+  <link href="http://dmly.github.io/blog/categories/programming-cloud/atom.xml" rel="self"/>
+  <link href="http://dmly.github.io/"/>
+  <updated>2013-05-03T18:33:20-04:00</updated>
+  <id>http://dmly.github.io/</id>
   <author>
     <name><![CDATA[Doug Ly]]></name>
     
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[DIY Java App Server on OpenShift: So Far So Good]]></title>
-    <link href="http://dmly.github.com/blog/2013/05/01/diy-java-app-server-on-openshift-so-far-so-good/"/>
+    <link href="http://dmly.github.io/blog/2013/05/01/diy-java-app-server-on-openshift-so-far-so-good/"/>
     <updated>2013-05-01T14:36:00-04:00</updated>
-    <id>http://dmly.github.com/blog/2013/05/01/diy-java-app-server-on-openshift-so-far-so-good</id>
+    <id>http://dmly.github.io/blog/2013/05/01/diy-java-app-server-on-openshift-so-far-so-good</id>
     <content type="html"><![CDATA[<p>I have been playing with <a href="https://www.openshift.com/">RedHat OpenShift</a> platform for several days. So far the experience has been very good. Several nuances encountered but I was able to get my java server application
 running in less than an hour. My application is not using any preconfigured OpenShift's cartridge or application server as I know.
 My application is a simple Gomoku game with WebSocket support. I use DropWizard as the light-weight server to bootstrap an embedded version of Jetty. Most of the issues I encounter were just
