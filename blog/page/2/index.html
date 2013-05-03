@@ -5,11 +5,11 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Category: programming java - Ghost in the JVM</title>
+  <title>Ghost in the JVM</title>
   <meta name="author" content="Doug Ly">
 
   
-  <meta name="description" content="Category: programming java">
+  <meta name="description" content="For my Flex project at work, I use Cairgorm as the MVC framework. Not that I like Cairgorn a lot but at the time our project starts it seems to be &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -18,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://dmly.github.comblog/categories/programming-java">
+  <link rel="canonical" href="http://dmly.github.com/blog/page/2">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="Ghost in the JVM" type="application/atom+xml">
@@ -63,40 +63,62 @@
 </nav>
   <div id="main">
     <div id="content">
-      <div>
-<article role="article">
+      <div class="blog-index">
   
+  
+  
+    <article>
+      
   <header>
-    <h1 class="entry-title">Category: Programming Java</h1>
+    
+      <h1 class="entry-title"><a href="/blog/2008/07/28/cairngorm-and-flash-event/">Cairngorm and Flash Event</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-07-28T18:46:00-04:00" pubdate data-updated="true">Jul 28<span>th</span>, 2008</time>
+        
+      </p>
     
   </header>
-  
-  <div id="blog-archives" class="category">
 
 
+  <div class="entry-content"><p>For my Flex project at work, I use Cairgorm as the MVC framework. Not that I like Cairgorn a lot but at the time our project starts it seems to be the de-facto framework for mid-to-big-mess Flex applications. Adobe also stands behind Cairgorm in supporting and consulting it.</p>
 
-  
-  <h2>2013</h2>
+<p>The learning curve is not so steep. I pick up the tutorial material available at Adobe website, specially the animated diagram is very helpful and learn to use the framework in less than a day. The second day I already begin to integrate it into our application.</p>
 
-<article>
-  
-<h1><a href="/blog/2013/04/28/java-proxy-chaining-aspect-on-the-cheap/">Java Proxy Chaining - Aspect on the Cheap</a></h1>
-<time datetime="2013-04-28T21:01:00-04:00" pubdate><span class='month'>Apr</span> <span class='day'>28</span> <span class='year'>2013</span></time>
-
-<footer>
-  <span class="categories">posted in <a class='category' href='/blog/categories/programming-java/'>programming java</a></span>
-</footer>
-
-
-</article>
+<p>One thing annoys me most about this framework is that there is no way (sort of) for the UI to get notified when a remote call is done getting data and the result is available. I end up use some hack to get around it. For example, use a ChangeWatcher to monitor the model. When the result ready, the command object updates the model, just triggers the ChangeWatcher&#8217;s propertyChange event.</p>
 
 </div>
-
   
-</article>
+  
+    <footer>
+      <a rel="full-article" href="/blog/2008/07/28/cairngorm-and-flash-event/">Read on &rarr;</a>
+    </footer>
+  
 
+
+    </article>
+  
+  <div class="pagination">
+    
+    <a href="/blog/archives">Blog Archives</a>
+    
+    <a class="next" href="/">Newer &rarr;</a>
+    
+  </div>
 </div>
-
 <aside class="sidebar">
   
     <section>
@@ -132,7 +154,6 @@
 
   
 </aside>
-
 
     </div>
   </div>

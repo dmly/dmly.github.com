@@ -48,15 +48,21 @@
     </url>
     <url>
         <loc>http://dmly.github.com/blog/2013/04/28/java-proxy-chaining-aspect-on-the-cheap/</loc>
-        <lastmod>2013-04-30T19:24:24-04:00</lastmod>
+        <lastmod>2013-04-30T19:26:15-04:00</lastmod>
+    </url>
+    <url>
+        <loc>
+            http://dmly.github.com/blog/2013/05/01/diy-java-app-server-on-openshift-so-far-so-good/
+        </loc>
+        <lastmod>2013-05-03T17:41:01-04:00</lastmod>
     </url>
     <url>
         <loc>http://dmly.github.com/</loc>
-        <lastmod>2013-04-30T19:24:24-04:00</lastmod>
+        <lastmod>2013-05-03T17:41:01-04:00</lastmod>
     </url>
     <url>
         <loc>http://dmly.github.com/blog/archives/</loc>
-        <lastmod>2013-04-30T19:24:24-04:00</lastmod>
+        <lastmod>2013-05-03T17:41:01-04:00</lastmod>
     </url>
     <url>
         <loc>http://dmly.github.com/robots.txt</loc>
