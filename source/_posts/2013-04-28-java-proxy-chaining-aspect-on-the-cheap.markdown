@@ -15,7 +15,7 @@ so that cache can be used before the call to the services are made. The better w
 Another common scenario is retry when you encounter exceptions in your service calls: transient network issues (latency, timed out, spillover in load balancer...) or database hiccups.
 Normally, you should at least retry the calls for several times before giving up. Like noted previously, a naive approach would be to go every methods and apply the retry logic. Or you could use AOP.
 
-In this post, I'm going to talk about how to use aspect oriented way to easy the refactoring effort. I will not talk about the full blown bytecode level AOP solution which uses AspectJ
+In this post, I'm going to talk about how to use aspect oriented way to ease the refactoring effort. I will not talk about the full blown bytecode level AOP solution which uses AspectJ
 with bytecode weaving. Instead, I will talk about a lighter weight of aspect programming using the Java's dynamic proxy and its reflection mechanism. I think it's pretty similar to the way Spring
 AOP works. The only difference is that my code will assume every method calls implement interfaces. Thus, it will not have to use cglib to generate the proxies. Also, I think programming to interface
 is a much cleaner and prefer way for your service calls Data access objects (DAO).

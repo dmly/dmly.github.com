@@ -25,7 +25,7 @@ posts_dir       = "_posts"    # directory for blog files
 themes_dir      = ".themes"   # directory for blog files
 new_post_ext    = "markdown"  # default new post file extension when using the new_post task
 new_page_ext    = "markdown"  # default new page file extension when using the new_page task
-server_port     = ENV['PORT'] ||= "4000"
+server_port     = ENV['PORT'] ||= "8080"
 server_host     = ENV['IP'] ||= '0.0.0.0'
 
 
