@@ -4,7 +4,7 @@
   <title><![CDATA[Category: programming java | Ghost in the JVM]]></title>
   <link href="http://dmly.github.io/blog/categories/programming-java/atom.xml" rel="self"/>
   <link href="http://dmly.github.io/"/>
-  <updated>2013-05-03T18:41:50-04:00</updated>
+  <updated>2014-08-04T22:37:40+00:00</updated>
   <id>http://dmly.github.io/</id>
   <author>
     <name><![CDATA[Doug Ly]]></name>
@@ -16,7 +16,7 @@
   <entry>
     <title type="html"><![CDATA[Java Proxy Chaining - Aspect on the Cheap]]></title>
     <link href="http://dmly.github.io/blog/2013/04/28/java-proxy-chaining-aspect-on-the-cheap/"/>
-    <updated>2013-04-28T21:01:00-04:00</updated>
+    <updated>2013-04-28T21:01:00+00:00</updated>
     <id>http://dmly.github.io/blog/2013/04/28/java-proxy-chaining-aspect-on-the-cheap</id>
     <content type="html"><![CDATA[<p>How many of you have written a caching solution for one of your expensive method calls? Or how about retry logic for your service calls?
 Living in such a connected world no single application is its own island. For every applications I have worked for, there always external dependencies, either other service APIs or
@@ -27,7 +27,7 @@ so that cache can be used before the call to the services are made. The better w
 Another common scenario is retry when you encounter exceptions in your service calls: transient network issues (latency, timed out, spillover in load balancer...) or database hiccups.
 Normally, you should at least retry the calls for several times before giving up. Like noted previously, a naive approach would be to go every methods and apply the retry logic. Or you could use AOP.</p>
 
-<p>In this post, I'm going to talk about how to use aspect oriented way to easy the refactoring effort. I will not talk about the full blown bytecode level AOP solution which uses AspectJ
+<p>In this post, I'm going to talk about how to use aspect oriented way to ease the refactoring effort. I will not talk about the full blown bytecode level AOP solution which uses AspectJ
 with bytecode weaving. Instead, I will talk about a lighter weight of aspect programming using the Java's dynamic proxy and its reflection mechanism. I think it's pretty similar to the way Spring
 AOP works. The only difference is that my code will assume every method calls implement interfaces. Thus, it will not have to use cglib to generate the proxies. Also, I think programming to interface
 is a much cleaner and prefer way for your service calls Data access objects (DAO).</p>

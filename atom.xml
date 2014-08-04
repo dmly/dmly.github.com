@@ -4,7 +4,7 @@
   <title><![CDATA[Ghost in the JVM]]></title>
   <link href="http://dmly.github.io/atom.xml" rel="self"/>
   <link href="http://dmly.github.io/"/>
-  <updated>2013-05-03T18:41:50-04:00</updated>
+  <updated>2014-08-04T22:37:40+00:00</updated>
   <id>http://dmly.github.io/</id>
   <author>
     <name><![CDATA[Doug Ly]]></name>
@@ -16,7 +16,7 @@
   <entry>
     <title type="html"><![CDATA[DIY Java App Server on OpenShift: So Far So Good]]></title>
     <link href="http://dmly.github.io/blog/2013/05/01/diy-java-app-server-on-openshift-so-far-so-good/"/>
-    <updated>2013-05-01T14:36:00-04:00</updated>
+    <updated>2013-05-01T14:36:00+00:00</updated>
     <id>http://dmly.github.io/blog/2013/05/01/diy-java-app-server-on-openshift-so-far-so-good</id>
     <content type="html"><![CDATA[<p>I have been playing with <a href="https://www.openshift.com/">RedHat OpenShift</a> platform for several days. So far the experience has been very good. Several nuances encountered but I was able to get my java server application
 running in less than an hour. My application is not using any preconfigured OpenShift&#8217;s cartridge or application server as I know.
@@ -91,7 +91,7 @@ To summarize, the whole workflow is:</p>
   <entry>
     <title type="html"><![CDATA[Java Proxy Chaining - Aspect on the Cheap]]></title>
     <link href="http://dmly.github.io/blog/2013/04/28/java-proxy-chaining-aspect-on-the-cheap/"/>
-    <updated>2013-04-28T21:01:00-04:00</updated>
+    <updated>2013-04-28T21:01:00+00:00</updated>
     <id>http://dmly.github.io/blog/2013/04/28/java-proxy-chaining-aspect-on-the-cheap</id>
     <content type="html"><![CDATA[<p>How many of you have written a caching solution for one of your expensive method calls? Or how about retry logic for your service calls?
 Living in such a connected world no single application is its own island. For every applications I have worked for, there always external dependencies, either other service APIs or
@@ -102,7 +102,7 @@ so that cache can be used before the call to the services are made. The better w
 Another common scenario is retry when you encounter exceptions in your service calls: transient network issues (latency, timed out, spillover in load balancer&#8230;) or database hiccups.
 Normally, you should at least retry the calls for several times before giving up. Like noted previously, a naive approach would be to go every methods and apply the retry logic. Or you could use AOP.</p>
 
-<p>In this post, I&#8217;m going to talk about how to use aspect oriented way to easy the refactoring effort. I will not talk about the full blown bytecode level AOP solution which uses AspectJ
+<p>In this post, I&#8217;m going to talk about how to use aspect oriented way to ease the refactoring effort. I will not talk about the full blown bytecode level AOP solution which uses AspectJ
 with bytecode weaving. Instead, I will talk about a lighter weight of aspect programming using the Java&#8217;s dynamic proxy and its reflection mechanism. I think it&#8217;s pretty similar to the way Spring
 AOP works. The only difference is that my code will assume every method calls implement interfaces. Thus, it will not have to use cglib to generate the proxies. Also, I think programming to interface
 is a much cleaner and prefer way for your service calls Data access objects (DAO).</p>
@@ -984,7 +984,7 @@ For this example, this is the order of aspect creation:</p>
   <entry>
     <title type="html"><![CDATA[Building Database Full Text Index with Lucene]]></title>
     <link href="http://dmly.github.io/blog/2010/09/14/building-database-full-text-index-with-lucene/"/>
-    <updated>2010-09-14T14:15:00-04:00</updated>
+    <updated>2010-09-14T14:15:00+00:00</updated>
     <id>http://dmly.github.io/blog/2010/09/14/building-database-full-text-index-with-lucene</id>
     <content type="html"><![CDATA[<p>I have this client table in Oracle having more than 3 million rows. One of the column is the client name in which our users want to have full text search support.
 Originally, Oracle context search feature was choosen by a group of consultants. May be we were maintaining the domain index correctly but its performance sucks.</p>
@@ -1192,7 +1192,7 @@ You could gain significant performance of this data loading using a database con
   <entry>
     <title type="html"><![CDATA[Asynchronous Calls in C#]]></title>
     <link href="http://dmly.github.io/blog/2010/08/27/asynchronous-calls-in-c-number/"/>
-    <updated>2010-08-27T14:19:00-04:00</updated>
+    <updated>2010-08-27T14:19:00+00:00</updated>
     <id>http://dmly.github.io/blog/2010/08/27/asynchronous-calls-in-c-number</id>
     <content type="html"><![CDATA[<p>Last December I started leading a team develop a Outlook addin for the firm.
 I admit that I am no C# developer. The last time I used C# was when I attended college years ago. But the group of consultants
@@ -1322,7 +1322,7 @@ and function pointer used for asynchronous method calls. I know I can get the sa
   <entry>
     <title type="html"><![CDATA[Concurrent AMF Request for BlazeDS]]></title>
     <link href="http://dmly.github.io/blog/2009/07/15/concurrent-amf-request-for-blazeds/"/>
-    <updated>2009-07-15T14:12:00-04:00</updated>
+    <updated>2009-07-15T14:12:00+00:00</updated>
     <id>http://dmly.github.io/blog/2009/07/15/concurrent-amf-request-for-blazeds</id>
     <content type="html"><![CDATA[<p>Requirement: AMF data service comes with BlazeDS servlet is asynchronous. One of the services provided is RemoteObject. RemoteObject calls are faster than WebServices and HTTPServices because the information is exchanged in binary.
 But RemoteObject itself has a not-too-well-known behavior. While it is true that RemoteObject services are asynchronous, they are not parallel.</p>
@@ -1450,7 +1450,7 @@ We define a separate http channel for the memos-related services to use. Other c
   <entry>
     <title type="html"><![CDATA[Query Templating for Hibernate Native Query]]></title>
     <link href="http://dmly.github.io/blog/2009/07/02/query-templating-for-hibernate-native-query/"/>
-    <updated>2009-07-02T14:09:00-04:00</updated>
+    <updated>2009-07-02T14:09:00+00:00</updated>
     <id>http://dmly.github.io/blog/2009/07/02/query-templating-for-hibernate-native-query</id>
     <content type="html"><![CDATA[<p>I recently encounter this kind of problematic requirement: making a native SQL in hibernate dynamic. The query should be written as a template. And based on the user selection, a concrete SQl statement is derived.
 It&#8217;s pointless to have this conversation if we use HQL&#8217;s query criteria of course. But with native SQL code, I admit there is no easy/legitimate way around but hack.</p>
@@ -1569,7 +1569,7 @@ candidate.</p>
   <entry>
     <title type="html"><![CDATA[RIA Portlet Made Possible With Flex Remoting]]></title>
     <link href="http://dmly.github.io/blog/2009/03/15/ria-portlet-made-possible-with-flex-remoting/"/>
-    <updated>2009-03-15T13:50:00-04:00</updated>
+    <updated>2009-03-15T13:50:00+00:00</updated>
     <id>http://dmly.github.io/blog/2009/03/15/ria-portlet-made-possible-with-flex-remoting</id>
     <content type="html"><![CDATA[<p>Even though portlet development standard has been in existence for a while its popularity and advanced functionality hasn&#8217;t got a lot of changes comparing to traditional web application development. Up until now, the <em>only</em> way to develop a portlet application is to use the dated (but obviously dominant) JSP technology. I know there have have been several attempts to bring advanced view engines into JSR-168/JSP-286 such as JSF prolet bridge or even the Wicket Portlet bridge the lanscape overall is pretty naive and dificult to comprehense. I can refer to <a href="http://today.java.net/pub/a/today/2009/01/20/jsr-286-portlet-irrelevance.html">this artical</a> when it comes to the reasons why portlet has not become dominant as if it should be by now.</p>
 
@@ -1656,7 +1656,7 @@ Another nice thing is that since we use the standard portlet API to expose the B
   <entry>
     <title type="html"><![CDATA[DBUnit FlatXmlDataSet Export Using Groovy Builder]]></title>
     <link href="http://dmly.github.io/blog/2009/03/13/dbunit-flatxmldataset-export-using-groovy-builder/"/>
-    <updated>2009-03-13T20:35:00-04:00</updated>
+    <updated>2009-03-13T20:35:00+00:00</updated>
     <id>http://dmly.github.io/blog/2009/03/13/dbunit-flatxmldataset-export-using-groovy-builder</id>
     <content type="html"><![CDATA[<p>Recently I have been using [DBUnit][1] to run my DAOs unit test with Spring and HSQL in memory database. One of the biggest challenge in testing the DAO layer is generating data to test with.
 Of course you could export data in your development database in style of insert statement files and import them into the test database before executing the test. But I think doing so still requires a lot of manual work
@@ -1799,7 +1799,7 @@ There we go your test data file!</p>
   <entry>
     <title type="html"><![CDATA[State of WSRP Development: OpenPortal verus Apache wsrp4j]]></title>
     <link href="http://dmly.github.io/blog/2009/01/14/state-of-wsrp-development-openportal-verus-apache-wsrp4j/"/>
-    <updated>2009-01-14T20:27:00-05:00</updated>
+    <updated>2009-01-14T20:27:00+00:00</updated>
     <id>http://dmly.github.io/blog/2009/01/14/state-of-wsrp-development-openportal-verus-apache-wsrp4j</id>
     <content type="html"><![CDATA[<p>with wsrp4j project has become more and more dormant, I am seeking for another wsrp framework.
 To the best of my knowledge, beside the commercial framework out there from BEA Portal and IBM Websphere, Apache&#8217;s wsrp4j used to be the
@@ -1909,7 +1909,7 @@ best of all, OpenPortal comes with the support of portlet 2.0 spec and wsrp vers
   <entry>
     <title type="html"><![CDATA[Autonomous Game Agent]]></title>
     <link href="http://dmly.github.io/blog/2008/10/23/autonomous-game-agent/"/>
-    <updated>2008-10-23T18:57:00-04:00</updated>
+    <updated>2008-10-23T18:57:00+00:00</updated>
     <id>http://dmly.github.io/blog/2008/10/23/autonomous-game-agent</id>
     <content type="html"><![CDATA[<p>I am always interested in game AI programming, specially autonomous game agents which move around and act on their own will but based on a set of pre-defined rules of course.
 After reading the first chapter of <a href="http://www.amazon.com/Programming-Game-Example-Mat-Buckland/dp/1556220782/ref=sr_1_5?ie=UTF8&amp;s=books&amp;qid=1224810375&amp;sr=8-5">Programming Game AI by Example</a> by Matt Buckland, I can understand the magic behind those intelligent behaviors. I am very impressed to know how simple it is  to create those behaviors. But it&#8217;s definitely not simple if one is not familiar with trigonometry and geometric algebra.</p>
@@ -1959,7 +1959,7 @@ Get the latest Java Plug-in here.
   <entry>
     <title type="html"><![CDATA[Cairngorm and Flash Event]]></title>
     <link href="http://dmly.github.io/blog/2008/07/28/cairngorm-and-flash-event/"/>
-    <updated>2008-07-28T18:46:00-04:00</updated>
+    <updated>2008-07-28T18:46:00+00:00</updated>
     <id>http://dmly.github.io/blog/2008/07/28/cairngorm-and-flash-event</id>
     <content type="html"><![CDATA[<p>For my Flex project at work, I use Cairgorm as the MVC framework. Not that I like Cairgorn a lot but at the time our project starts it seems to be the de-facto framework for mid-to-big-mess Flex applications. Adobe also stands behind Cairgorm in supporting and consulting it.</p>
 
